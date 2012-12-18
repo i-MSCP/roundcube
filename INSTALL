@@ -13,12 +13,9 @@ REQUIREMENTS
 * .htaccess support allowing overrides for DirectoryIndex
 * PHP Version 5.2.1 or greater including
    - PCRE, DOM, JSON, XML, Session, Sockets (required)
-   - Libiconv
-   - Multibyte String (mbstring)
-   - Mcrypt (supporting Triple DES)
-   - Fileinfo (optional)
-   - Database driver for either MySQL, Postgres or SQLite
-* The PEAR framework with the following packages installed:
+   - libiconv (recommended)
+   - mbstring, fileinfo, mcrypt (optional)
+* PEAR packages distributed with Roundcube or external:
    - MDB2 2.5.0 or newer
    - Mail_Mime 1.8.1 or newer
    - Mail_mimeDecode 1.5.5 or newer

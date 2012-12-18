@@ -27,7 +27,6 @@ INSTALLATION
 ------------
 For detailed instructions on how to install Roundcube webmail on your server,
 please refer to the INSTALL document in the same directory as this document.
-Please carefully read the REQUIREMENTS section of the INSTALL instructions.
 
 If you're updating an older version of Roundcube please follow the steps
 described in the UPGRADING file.
