@@ -1,0 +1,21 @@
+{
+	"name":"iMSCP/roundcube",
+	"description":"iMSCP tools - Roundcube webmail",
+	"authors":[
+	{
+		"name":"Roundcube Team",
+		"email":"hello@roundcube.net",
+		"homepage":"http://roundcube.net"
+	}
+],
+	"license":"GPL-3.0+",
+	"keywords":[
+		"imscp",
+		"roundcube",
+		"webmail",
+		"tools"
+	],
+	"require":{
+		"PHP":">=5"
+	}
+}
