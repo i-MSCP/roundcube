@@ -1,11 +1,11 @@
 <?php
-/*
 
+/*
  +-----------------------------------------------------------------------+
  | program/steps/utils/save_pref.inc                                     |
  |                                                                       |
  | This file is part of the Roundcube Webmail client                     |
- | Copyright (C) 2005-2013, The Roundcube Dev Team                       |
+ | Copyright (C) 2005-2010, The Roundcube Dev Team                       |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
@@ -31,7 +31,7 @@ $whitelist = array(
 if (!in_array($name, array_merge($whitelist, $RCMAIL->plugins->allowed_prefs))) {
     raise_error(array('code' => 500, 'type' => 'php',
         'file' => __FILE__, 'line' => __LINE__,
-        'message' => sprintf("Hack attempt detected (user: %s)", $_SESSION['username'])),
+        'message' => sprintf("Hack attempt detected (user: %s)", $RCMAIL->get_user_name())),
         true, false);
 
     $OUTPUT->reset();
@@ -57,4 +57,5 @@ if ($sessname = get_input_value('_session', RCUBE_INPUT_POST)) {
 
 $OUTPUT->reset();
 $OUTPUT->send();
+
 

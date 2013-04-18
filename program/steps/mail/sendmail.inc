@@ -18,9 +18,6 @@
  +-----------------------------------------------------------------------+
  | Author: Thomas Bruederli <roundcube@gmail.com>                        |
  +-----------------------------------------------------------------------+
-
- $Id$
-
 */
 
 // remove all scripts and act as called in frame
@@ -52,7 +49,7 @@ if (!$savedraft) {
 
   if(!empty($CONFIG['sendmail_delay'])) {
     $wait_sec = time() - intval($CONFIG['sendmail_delay']) - intval($CONFIG['last_message_time']);
-    if($wait_sec < 0) {
+    if ($wait_sec < 0) {
       $OUTPUT->show_message('senttooquickly', 'error', array('sec' => $wait_sec * -1));
       $OUTPUT->send('iframe');
     }
@@ -76,6 +73,7 @@ function rcmail_encrypt_header($what)
 function rcmail_get_identity($id)
 {
   global $RCMAIL, $message_charset;
+  global $RCMAIL;
 
   if ($sql_arr = $RCMAIL->user->get_identity($id)) {
     $out = $sql_arr;
@@ -101,9 +99,8 @@ function rcmail_get_identity($id)
  * to this:
  *
  * <img src="/path/on/server/.../tiny_mce/plugins/emotions/images/smiley-cool.gif" border="0" alt="Cool" title="Cool" />
- * ...
  */
-function rcmail_fix_emoticon_paths(&$mime_message)
+function rcmail_fix_emoticon_paths($mime_message)
 {
   global $RCMAIL;
 
@@ -143,8 +140,53 @@ function rcmail_fix_emoticon_paths(&$mime_message)
   }
 
   $mime_message->setHTMLBody($body);
+}
 
-  return $body;
+/**
+ * Extract image attachments from HTML content (data URIs)
+ */
+function rcmail_extract_inline_images($mime_message, $from)
+{
+    $body   = $mime_message->getHTMLBody();
+    $offset = 0;
+    $list   = array();
+    $regexp = '# src=[\'"](data:(image/[a-z]+);base64,([a-z0-9+/=\r\n]+))([\'"])#i';
+
+    // get domain for the Content-ID, must be the same as in Mail_Mime::get()
+    if (preg_match('#@([0-9a-zA-Z\-\.]+)#', $from, $matches)) {
+        $domain = $matches[1];
+    } else {
+        $domain = 'localhost';
+    }
+
+    if (preg_match_all($regexp, $body, $matches, PREG_OFFSET_CAPTURE)) {
+        foreach ($matches[1] as $idx => $m) {
+            $data = preg_replace('/\r\n/', '', $matches[3][$idx][0]);
+            $data = base64_decode($data);
+
+            if (empty($data)) {
+                continue;
+            }
+
+            $hash      = md5($data) . '@' . $domain;
+            $mime_type = $matches[2][$idx][0];
+            $name      = $list[$hash];
+
+            // add the image to the MIME message
+            if (!$name) {
+                $ext         = preg_replace('#^[^/]+/#', '', $mime_type);
+                $name        = substr($hash, 0, 8) . '.' . $ext;
+                $list[$hash] = $name;
+
+                $mime_message->addHTMLImage($data, $mime_type, $name, false, $hash);
+            }
+
+            $body = substr_replace($body, $name, $m[1] + $offset, strlen($m[0]));
+            $offset += strlen($name) - strlen($m[0]);
+        }
+    }
+
+    $mime_message->setHTMLBody($body);
 }
 
 /**
@@ -177,11 +219,11 @@ function rcmail_email_input_format($mailto, $count=false, $check=true)
     // address in brackets without name (do nothing)
     if (preg_match('/^<'.$email_regexp.'>$/', $item)) {
       $item = rcube_idn_to_ascii(trim($item, '<>'));
-      $result[] = '<' . $item . '>';
+      $result[] = $item;
     // address without brackets and without name (add brackets)
     } else if (preg_match('/^'.$email_regexp.'$/', $item)) {
       $item = rcube_idn_to_ascii($item);
-      $result[] = '<' . $item . '>';
+      $result[] = $item;
     // address with name (handle name)
     } else if (preg_match('/<*'.$email_regexp.'>*$/', $item, $matches)) {
       $address = $matches[0];
@@ -248,8 +290,7 @@ if (strlen($_POST['_draft_saveid']) > 3)
 $message_id = rcmail_gen_message_id();
 
 // set default charset
-$input_charset = $OUTPUT->get_charset();
-$message_charset = isset($_POST['_charset']) ? $_POST['_charset'] : $input_charset;
+$message_charset = isset($_POST['_charset']) ? $_POST['_charset'] : $OUTPUT->get_charset();
 
 $EMAIL_FORMAT_ERROR = NULL;
 $RECIPIENT_COUNT = 0;
@@ -350,7 +391,7 @@ if (!empty($mailcc)) {
 if (!empty($mailbcc)) {
   $headers['Bcc'] = $mailbcc;
 }
-if (!empty($identity_arr['bcc'])) {
+if (!empty($identity_arr['bcc']) && stripos($headers['Bcc'], $identity_arr['bcc']) === false) {
   $headers['Bcc'] = ($headers['Bcc'] ? $headers['Bcc'].', ' : '') . $identity_arr['bcc'];
   $RECIPIENT_COUNT ++;
 }
@@ -452,7 +493,7 @@ if (!$savedraft) {
     $message_body = preg_replace('/\s*id="_rc_sig"/', '', $message_body);
 
     // add inline css for blockquotes
-    $bstyle = 'padding-left:5px; border-left:#1010ff 2px solid; margin-left:5px; width:100%';
+    $bstyle = 'padding-left:5px; border-left:#1010ff 2px solid; margin-left:5px';
     $message_body = preg_replace('/<blockquote>/',
       '<blockquote type="cite" style="'.$bstyle.'">', $message_body);
   }
@@ -484,6 +525,19 @@ if (!$savedraft) {
 
 if ($isHtml) {
   $message_body .= "\r\n</body></html>\r\n";
+}
+
+// sort attachments to make sure the order is the same as in the UI (#1488423)
+$files = get_input_value('_attachments', RCUBE_INPUT_POST);
+if ($files) {
+  $files = explode(',', $files);
+  $files = array_flip($files);
+  foreach ($files as $idx => $val) {
+    $files[$idx] = $COMPOSE['attachments'][$idx];
+    unset($COMPOSE['attachments'][$idx]);
+  }
+
+  $COMPOSE['attachments'] = array_merge(array_filter($files), $COMPOSE['attachments']);
 }
 
 // set line length for body wrapping
@@ -523,8 +577,8 @@ if ($isHtml) {
   $plugin['body'] = rcmail_replace_emoticons($plugin['body']);
 
   // add a plain text version of the e-mail as an alternative part.
-  $h2t = new html2text($plugin['body'], false, true, 0);
-  $plainTextPart = rc_wordwrap($h2t->get_text(), $LINE_LENGTH, "\r\n");
+  $h2t = new rcube_html2text($plugin['body'], false, true, 0, $message_charset);
+  $plainTextPart = rc_wordwrap($h2t->get_text(), $LINE_LENGTH, "\r\n", false, $message_charset);
   $plainTextPart = wordwrap($plainTextPart, 998, "\r\n", true);
 
   // make sure all line endings are CRLF (#1486712)
@@ -537,7 +591,10 @@ if ($isHtml) {
 
   // look for "emoticon" images from TinyMCE and change their src paths to
   // be file paths on the server instead of URL paths.
-  $message_body = rcmail_fix_emoticon_paths($MAIL_MIME);
+  rcmail_fix_emoticon_paths($MAIL_MIME);
+
+  // Extract image Data URIs into message attachments (#1488502)
+  rcmail_extract_inline_images($MAIL_MIME, $from);
 }
 else {
   $plugin = $RCMAIL->plugins->exec_hook('message_outgoing_body',
@@ -546,10 +603,10 @@ else {
   $message_body = $plugin['body'];
 
   // compose format=flowed content if enabled
-  if ($flowed = $RCMAIL->config->get('send_format_flowed', true))
-    $message_body = rcube_mime::format_flowed($message_body, min($LINE_LENGTH+2, 79));
+  if ($flowed = ($savedraft || $RCMAIL->config->get('send_format_flowed', true)))
+    $message_body = rcube_mime::format_flowed($message_body, min($LINE_LENGTH+2, 79), $message_charset);
   else
-    $message_body = rc_wordwrap($message_body, $LINE_LENGTH, "\r\n");
+    $message_body = rc_wordwrap($message_body, $LINE_LENGTH, "\r\n", false, $message_charset);
 
   $message_body = wordwrap($message_body, 998, "\r\n", true);
 
@@ -578,13 +635,12 @@ if (is_array($COMPOSE['attachments']))
       $ctype = str_replace('image/pjpeg', 'image/jpeg', $attachment['mimetype']); // #1484914
       $file = $attachment['data'] ? $attachment['data'] : $attachment['path'];
 
-      // .eml attachments send inline
       $MAIL_MIME->addAttachment($file,
         $ctype,
         $attachment['name'],
         ($attachment['data'] ? false : true),
         ($ctype == 'message/rfc822' ? '8bit' : 'base64'),
-        ($ctype == 'message/rfc822' ? 'inline' : 'attachment'),
+        'attachment',
         '', '', '',
         $CONFIG['mime_param_folding'] ? 'quoted-printable' : NULL,
         $CONFIG['mime_param_folding'] == 2 ? 'quoted-printable' : NULL,
@@ -637,19 +693,18 @@ if (!$savedraft)
     $smtp_error, $mailbody_file, $smtp_opts);
 
   // return to compose page if sending failed
-  if (!$sent)
-    {
+  if (!$sent) {
     // remove temp file
     if ($mailbody_file) {
       unlink($mailbody_file);
-      }
+    }
 
     if ($smtp_error)
       $OUTPUT->show_message($smtp_error['label'], 'error', $smtp_error['vars']); 
     else
       $OUTPUT->show_message('sendingfailed', 'error'); 
     $OUTPUT->send('iframe');
-    }
+  }
 
   // save message sent time
   if (!empty($CONFIG['sendmail_delay']))
@@ -667,7 +722,7 @@ if (!$savedraft)
 // Determine which folder to save message
 if ($savedraft)
   $store_target = $CONFIG['drafts_mbox'];
-else
+else if (!$RCMAIL->config->get('no_save_sent_messages'))
   $store_target = isset($_POST['_store_target']) ? get_input_value('_store_target', RCUBE_INPUT_POST) : $CONFIG['sent_mbox'];
 
 if ($store_target) {
@@ -707,7 +762,8 @@ if ($store_target) {
             'message' => "Could not create message: ".$msg->getMessage()),
             TRUE, FALSE);
     else {
-      $saved = $RCMAIL->storage->save_message($store_target, $msg, $headers, $mailbody_file ? true : false);
+      $saved = $RCMAIL->storage->save_message($store_target, $msg, $headers,
+        $mailbody_file ? true : false, array('SEEN'));
     }
 
     if ($mailbody_file) {
@@ -782,6 +838,6 @@ else {
   if ($store_folder && !$saved)
     $OUTPUT->command('sent_successfully', 'error', rcube_label('errorsavingsent'));
   else
-    $OUTPUT->command('sent_successfully', 'confirmation', rcube_label('messagesent'));
+    $OUTPUT->command('sent_successfully', 'confirmation', rcube_label('messagesent'), $store_target);
   $OUTPUT->send('iframe');
 }

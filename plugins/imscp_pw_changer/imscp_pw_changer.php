@@ -1,7 +1,7 @@
 <?php
 /**
  * i-MSCP - internet Multi Server Control Panel
- * Copyright (C) 2010-2011 by i-MSCP team
+ * Copyright (C) 2010-2013 by i-MSCP team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,12 +17,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * @category	iMSCP
- * @package		iMSCP Roundcube password changer
- * @copyright	2010-2011 by i-MSCP team
- * @author 		Sascha Bay
- * @link		http://www.i-mscp.net i-MSCP Home Site
- * @license		http://www.gnu.org/licenses/gpl-2.0.html GPL v2
+ * @category  iMSCP
+ * @package   iMSCP Roundcube password changer
+ * @copyright 2010-2013 by i-MSCP team
+ * @author    Sascha Bay
+ * @link      http://www.i-mscp.net i-MSCP Home Site
+ * @license   http://www.gnu.org/licenses/gpl-2.0.html GPL v2
  */
 define('PASSWORD_ERROR', 2);
 define('PASSWORD_CONNECT_ERROR', 3);

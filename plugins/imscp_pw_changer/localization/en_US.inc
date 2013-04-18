@@ -1,7 +1,7 @@
 <?php
 /**
  * i-MSCP - internet Multi Server Control Panel
- * Copyright (C) 2010-2011 by i-MSCP team
+ * Copyright (C) 2010-2013 by i-MSCP team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
  *
  * @category    iMSCP
  * @package     iMSCP Roundcube password changer
- * @copyright   2010-2011 by i-MSCP team
+ * @copyright   2010-2013 by i-MSCP team
  * @author 		Sascha Bay
  * @link        http://www.i-mscp.net i-MSCP Home Site
  * @license     http://www.gnu.org/licenses/gpl-2.0.html GPL v2
@@ -32,7 +32,7 @@ $labels['confpasswd']  = 'Confirm New Password:';
 
 $messages = array();
 $messages['nopassword'] = 'Please input new password.';
-$messages['passwordinconsistency'] = 'Passwords do not match, please try again.';
+$messages['passwordinconsistency'] = "Passwords doesn't match, please try again.";
 $messages['connecterror'] = 'Could not save new password. Connection error.';
 $messages['internalerror'] = 'Could not save new password.';
 $messages['passwordlenght'] = 'Password lenght! Min. characters: ';

@@ -7,4 +7,5 @@
 *.mgc binary
 *.png binary
 *.sfd
+*.tif
 *.ttf

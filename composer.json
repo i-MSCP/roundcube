@@ -1,7 +1,7 @@
 {
 	"name":"imscp/roundcube",
 	"description":"iMSCP tools - Roundcube Webmail",
-	"version":"0.8.6",
+	"version":"0.9.0",
 	"authors":[
 	{
 		"name":"Roundcube Team",
@@ -17,6 +17,6 @@
 		"tools"
 	],
 	"require":{
-		"PHP":">=5.2"
+		"PHP":">=5.2.1"
 	}
 }
