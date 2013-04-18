@@ -110,9 +110,9 @@ class imscp_pw_changer extends rcube_plugin{
 		$table->add('title', html::label($field_id, Q($this->gettext('confpasswd'))));
 		$table->add(null, $input_confpasswd->show());
 
-		$out = html::div(array('class' => "settingsbox", 'style' => "margin:0"),
-		  html::div(array('id' => "prefs-title"), $this->gettext('changepasswd')) .
-		  html::div(array('style' => "padding:15px"), $table->show() .
+		$out = html::div(array('class' => 'box'),
+		  html::div(array('id' => "prefs-title", 'class' => 'boxtitle'), $this->gettext('changepasswd')) .
+		  html::div(array('class' => 'boxcontent'), $table->show() .
 			html::p(null,
 			  $rcmail->output->button(array(
 				'command' => 'plugin.imscp_pw_changer-save',

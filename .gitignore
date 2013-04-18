@@ -1,0 +1,11 @@
+*.PHPEditProject
+.idea
+nbproject
+.pc
+.buildpath
+.project
+.settings/org.eclipse.php.core.prefs
+# ignore files added to these directories
+logs/*
+temp/*
+config/*
