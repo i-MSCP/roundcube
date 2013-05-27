@@ -772,10 +772,12 @@ function rcmail_plain_body($body, $flowed=false)
       if ($q > $quote_level) {
         $body[$n] = $replacer->get_replacement($replacer->add(
           str_repeat('<blockquote>', $q - $quote_level))) . $body[$n];
+        $last = $n;
       }
       else if ($q < $quote_level) {
         $body[$n] = $replacer->get_replacement($replacer->add(
           str_repeat('</blockquote>', $quote_level - $q))) . $body[$n];
+        $last = $n;
       }
       else if ($flowed) {
         // previous line is flowed
@@ -1439,9 +1441,10 @@ function rcmail_address_string($input, $max=null, $linked=false, $addicon=null, 
     $name   = $part['name'];
     $mailto = $part['mailto'];
     $string = $part['string'];
+    $valid  = check_email($mailto, false);
 
     // phishing email prevention (#1488981), e.g. "valid@email.addr <phishing@email.addr>"
-    if ($name && $name != $mailto && strpos($name, '@')) {
+    if ($name && $valid && $name != $mailto && strpos($name, '@')) {
       $name = '';
     }
 
@@ -1457,7 +1460,7 @@ function rcmail_address_string($input, $max=null, $linked=false, $addicon=null, 
       // for printing we display all addresses
       continue;
     }
-    else if (check_email($part['mailto'], false)) {
+    else if ($valid) {
       if ($linked) {
         $address = html::a(array(
             'href' => 'mailto:'.$mailto,
@@ -1490,7 +1493,7 @@ function rcmail_address_string($input, $max=null, $linked=false, $addicon=null, 
       if ($name)
         $address .= Q($name);
       if ($mailto)
-        $address .= (strlen($address) ? ' ' : '') . sprintf('&lt;%s&gt;', Q($mailto));
+        $address = trim($address . ' ' . Q($name ? sprintf('<%s>', $mailto) : $mailto));
     }
 
     $address = html::span('adr', $address);
@@ -1837,8 +1840,7 @@ function rcmail_fix_mimetype($name)
   // application/pdf.A520491B_3BF7_494D_8855_7FAC2C6C0608
   if (preg_match('/^application\/pdf.+/', $name))
     $name = 'application/pdf';
-
-  // treat image/pjpeg as image/jpeg
+  // treat image/pjpeg (image/pjpg, image/jpg) as image/jpeg (#1489097)
   else if (preg_match('/^image\/p?jpe?g$/', $name))
     $name = 'image/jpeg';
 

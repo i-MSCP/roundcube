@@ -1690,8 +1690,6 @@ function rcube_webmail()
 
     // focus window, delayed to bring to front
     window.setTimeout(function() { extwin.focus(); }, 10);
-    // position window with setTimeout for Chrome (#1488931)
-    window.setTimeout(function() { extwin.moveTo(l,t); }, bw.chrome ? 100 : 10);
 
     return wname;
   };
@@ -6810,6 +6808,15 @@ function rcube_webmail()
       else if (plugin.name && regex.test(plugin.name))
         return 1;
     }
+
+    // this will detect any pdf plugin including PDF.js in Firefox
+    var obj = document.createElement('OBJECT');
+    obj.onload = function() { rcmail.env.browser_capabilities.pdf = 1; };
+    obj.onerror = function() { rcmail.env.browser_capabilities.pdf = 0; };
+    obj.style.display = 'none';
+    obj.type = 'application/pdf';
+    obj.data = 'program/resources/blank.pdf';
+    document.body.appendChild(obj);
 
     return 0;
   };

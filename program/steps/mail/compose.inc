@@ -318,6 +318,19 @@ foreach ($parts as $header) {
         $fvalue .= $v;
       if ($v = $MESSAGE->headers->cc)
         $fvalue .= (!empty($fvalue) ? $separator : '') . $v;
+      if ($v = $MESSAGE->headers->get('Sender', false))
+        $fvalue .= (!empty($fvalue) ? $separator : '') . $v;
+
+      // When To: and Reply-To: are the same we add From: address to the list (#1489037)
+      if ($v = $MESSAGE->headers->from) {
+        $from    = rcube_mime::decode_address_list($v, null, false, $MESSAGE->headers->charset, true);
+        $to      = rcube_mime::decode_address_list($MESSAGE->headers->to, null, false, $MESSAGE->headers->charset, true);
+        $replyto = rcube_mime::decode_address_list($MESSAGE->headers->replyto, null, false, $MESSAGE->headers->charset, true);
+
+        if (count($replyto) && !count(array_diff($to, $replyto)) && count(array_diff($from, $to))) {
+          $fvalue .= (!empty($fvalue) ? $separator : '') . $v;
+        }
+      }
     }
   }
   else if (in_array($compose_mode, array(RCUBE_COMPOSE_DRAFT, RCUBE_COMPOSE_EDIT))) {
@@ -562,7 +575,7 @@ function rcmail_prepare_message_body()
     rcmail_write_forward_attachments();
   }
   // reply/edit/draft/forward
-  else if ($compose_mode && ($compose_mode != RCUBE_COMPOSE_REPLY || $RCMAIL->config->get('reply_mode') != -1)) {
+  else if ($compose_mode && ($compose_mode != RCUBE_COMPOSE_REPLY || intval($RCMAIL->config->get('reply_mode')) != -1)) {
     $isHtml = rcmail_compose_editor_mode();
 
     if (!empty($MESSAGE->parts)) {
@@ -617,7 +630,7 @@ function rcmail_prepare_message_body()
 
 function rcmail_compose_part_body($part, $isHtml = false)
 {
-    global $RCMAIL, $MESSAGE, $compose_mode;
+    global $RCMAIL, $MESSAGE, $LINE_LENGTH, $compose_mode;
 
     // Check if we have enough memory to handle the message in it
     // #1487424: we need up to 10x more memory than the body
@@ -1199,10 +1212,11 @@ function rcmail_save_image($path, $mimetype='')
 
   // handle attachments in memory
   $data = file_get_contents($path);
+  $name = rcmail_basename($path);
 
   $attachment = array(
     'group' => $COMPOSE['id'],
-    'name' => rcmail_basename($path),
+    'name' => $name,
     'mimetype' => $mimetype ? $mimetype : rc_mime_content_type($path, $name),
     'data' => $data,
     'size' => strlen($data),
