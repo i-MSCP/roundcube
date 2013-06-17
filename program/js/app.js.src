@@ -583,11 +583,11 @@ function rcube_webmail()
           var prevstate = this.env.compose_extwin;
           $("input[name='_action']", this.gui_objects.messageform).val('compose');
           this.gui_objects.messageform.action = this.url('mail/compose', { _id: this.env.compose_id, _extwin: 1 });
-          this.gui_objects.messageform.target = this.open_window('', 1100, 900);
+          this.gui_objects.messageform.target = this.open_window('', 1100);
           this.gui_objects.messageform.submit();
         }
         else {
-          this.open_window(this.env.permaurl, 900, 900);
+          this.open_window(this.env.permaurl, 900);
         }
         break;
 
@@ -1552,7 +1552,7 @@ function rcube_webmail()
 
     // start timer for message preview (wait for double click)
     if (selected && this.env.contentframe && !list.multi_selecting && !this.dummy_select)
-      this.preview_timer = setTimeout(function(){ ref.msglist_get_preview(); }, 200);
+      this.preview_timer = setTimeout(function() { ref.msglist_get_preview(); }, this.dblclick_time);
     else if (this.env.contentframe)
       this.show_contentframe(false);
   };
@@ -1568,12 +1568,13 @@ function rcube_webmail()
 
     var win = this.get_frame_window(this.env.contentframe);
 
-    if (win && win.location.href.indexOf(this.env.blankpage)>=0) {
+    if (win && win.location.href.indexOf(this.env.blankpage) >= 0) {
       if (this.preview_timer)
         clearTimeout(this.preview_timer);
       if (this.preview_read_timer)
         clearTimeout(this.preview_read_timer);
-      this.preview_timer = setTimeout(function(){ ref.msglist_get_preview(); }, 200);
+
+      this.preview_timer = setTimeout(function() { ref.msglist_get_preview(); }, this.dblclick_time);
     }
   };
 
@@ -1581,11 +1582,11 @@ function rcube_webmail()
   {
     if (this.preview_timer)
       clearTimeout(this.preview_timer);
-
     if (this.preview_read_timer)
       clearTimeout(this.preview_read_timer);
 
     var uid = list.get_single_selection();
+
     if (uid && this.env.mailbox == this.env.drafts_mailbox)
       this.open_compose_step({ _draft_uid: uid, _mbox: this.env.mailbox });
     else if (uid)
@@ -1673,12 +1674,16 @@ function rcube_webmail()
     return 0;
   };
 
-  this.open_window = function(url, width, height)
+  this.open_window = function(url, width)
   {
-    var w = Math.min(width, screen.width - 10),
-      h = Math.min(height, screen.height - 100),
-      l = (screen.width - w) / 2 + (screen.left || 0),
-      t = Math.max(0, (screen.height - h) / 2 + (screen.top || 0) - 20),
+    var win = this.is_framed() ? parent.window : window,
+      page = $(win),
+      page_width = page.width(),
+      page_height = bw.mz ? $('body', win).height() : page.height(),
+      w = Math.min(width, page_width),
+      h = page_height, // always use same height
+      l = (win.screenLeft || win.screenX) + 20,
+      t = (win.screenTop || win.screenY) + 20,
       wname = 'rcmextwin' + new Date().getTime(),
       extwin = window.open(url + (url.match(/\?/) ? '&' : '?') + '_extwin=1', wname,
         'width='+w+',height='+h+',top='+t+',left='+l+',resizable=yes,toolbar=no,status=no,location=no');
@@ -1887,7 +1892,8 @@ function rcube_webmail()
       else
         html = cols[c];
 
-      col.innerHTML = html;
+      if (html)
+        col.innerHTML = html;
 
       row.appendChild(col);
     }
@@ -1990,7 +1996,7 @@ function rcube_webmail()
     }
     else {
       if (!preview && this.env.message_extwin && !this.env.extwin)
-        this.open_window(this.env.comm_path+url, 1000, 1200);
+        this.open_window(this.env.comm_path+url, 1000);
       else
         this.location_href(this.env.comm_path+url, target, true);
 
@@ -3016,11 +3022,12 @@ function rcube_webmail()
 
     // open new compose window
     if (this.env.compose_extwin && !this.env.extwin) {
-      this.open_window(url, 1150, 900);
+      this.open_window(url, 1150);
     }
     else {
       this.redirect(url);
-      window.resizeTo(Math.max(1150, $(window).width()), Math.max(900, $(window).height()));
+      if (this.env.extwin)
+        window.resizeTo(Math.max(1150, $(window).width()), $(window).height()+24);
     }
   };
 
@@ -3128,7 +3135,7 @@ function rcube_webmail()
 
   this.compose_add_recipient = function(field)
   {
-    var recipients = [], input = $('#_'+field);
+    var recipients = [], input = $('#_'+field), delim = this.env.recipients_delimiter;
 
     if (this.contact_list && this.contact_list.selection.length) {
       for (var id, n=0; n < this.contact_list.selection.length; n++) {
@@ -3147,8 +3154,10 @@ function rcube_webmail()
     }
 
     if (recipients.length && input.length) {
-      var oldval = input.val();
-      input.val((oldval ? oldval + this.env.recipients_delimiter : '') + recipients.join(this.env.recipients_delimiter));
+      var oldval = input.val(), rx = new RegExp(RegExp.escape(delim) + '\\s*$');
+      if (oldval && !rx.test(oldval))
+        oldval += delim + ' ';
+      input.val(oldval + recipients.join(delim + ' ') + delim + ' ');
       this.triggerEvent('add-recipient', { field:field, recipients:recipients });
     }
   };
@@ -4109,6 +4118,7 @@ function rcube_webmail()
     var n, id, sid, ref = this, writable = false,
       source = this.env.source ? this.env.address_sources[this.env.source] : null;
 
+    // we don't have dblclick handler here, so use 200 instead of this.dblclick_time
     if (id = list.get_single_selection())
       this.preview_timer = setTimeout(function(){ ref.load_contact(id, 'show'); }, 200);
     else if (this.env.contentframe)
@@ -4408,7 +4418,8 @@ function rcube_webmail()
     for (c in cols) {
       col = document.createElement('td');
       col.className = String(c).toLowerCase();
-      col.innerHTML = cols[c];
+      if (cols[c])
+        col.innerHTML = cols[c];
       row.appendChild(col);
     }
 
@@ -5854,7 +5865,7 @@ function rcube_webmail()
 
         for (c=0, len=repl.length; c < len; c++) {
           cell = document.createElement('td');
-          cell.innerHTML = repl[c].html;
+          cell.innerHTML = repl[c].html || '';
           if (repl[c].id) cell.id = repl[c].id;
           if (repl[c].className) cell.className = repl[c].className;
           tr.appendChild(cell);
@@ -6482,6 +6493,7 @@ function rcube_webmail()
         url: ref.url(ref.env.filedrop.action||'upload', { _id:ref.env.compose_id||ref.env.cid||'', _uploadid:ts, _remote:1 }),
         contentType: formdata ? false : 'multipart/form-data; boundary=' + boundary,
         processData: false,
+        timeout: 0, // disable default timeout set in ajaxSetup()
         data: formdata || multipart,
         headers: {'X-Roundcube-Request': ref.env.request_token},
         beforeSend: function(xhr, s) { if (!formdata && xhr.sendAsBinary) xhr.send = xhr.sendAsBinary; },
@@ -6808,15 +6820,6 @@ function rcube_webmail()
       else if (plugin.name && regex.test(plugin.name))
         return 1;
     }
-
-    // this will detect any pdf plugin including PDF.js in Firefox
-    var obj = document.createElement('OBJECT');
-    obj.onload = function() { rcmail.env.browser_capabilities.pdf = 1; };
-    obj.onerror = function() { rcmail.env.browser_capabilities.pdf = 0; };
-    obj.style.display = 'none';
-    obj.type = 'application/pdf';
-    obj.data = 'program/resources/blank.pdf';
-    document.body.appendChild(obj);
 
     return 0;
   };
