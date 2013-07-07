@@ -26,14 +26,11 @@
 
 if (window.rcmail) {
 	rcmail.addEventListener('init', function(evt) {
-		var tab = $('<span>').attr('id', 'settingstabpluginpassword').addClass('tablink');
-
+		var tab = $('<span>').attr('id', 'settingstabpluginimscp_pw_changer').addClass('tablink password');
 		var button = $('<a>').attr('href', rcmail.env.comm_path+'&_action=plugin.imscp_pw_changer').html(rcmail.gettext('password')).appendTo(tab);
-		button.bind('click', function(e){ return rcmail.command('plugin.imscp_pw_changer', this) });
 
 		// add button and register commands
 		rcmail.add_element(tab, 'tabs');
-		rcmail.register_command('plugin.imscp_pw_changer', function() { rcmail.goto_url('plugin.imscp_pw_changer') }, true);
 		rcmail.register_command('plugin.imscp_pw_changer-save', function() {
 			var input_newpasswd = rcube_find_object('_newpasswd');
 			var input_confpasswd = rcube_find_object('_confpasswd');
