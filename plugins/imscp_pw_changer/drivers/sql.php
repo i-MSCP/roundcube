@@ -28,7 +28,7 @@
 function imscp_password_save($password)
 {
 	$rcmail = rcmail::get_instance();
-	$sql = "UPDATE `mail_users` SET `mail_pass` = %p, `status` = 'change' WHERE `mail_addr` = %u LIMIT 1";
+	$sql = "UPDATE `mail_users` SET `mail_pass` = %p, `status` = 'tochange' WHERE `mail_addr` = %u LIMIT 1";
 
 	if ($dsn = $rcmail->config->get('password_db_dsn')) {
 		// #1486067: enable new_link option
