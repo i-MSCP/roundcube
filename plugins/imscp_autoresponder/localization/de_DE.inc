@@ -33,6 +33,7 @@ $labels['enableautoresponder']  = 'Automatische Antwort aktivieren:';
 
 $messages = array();
 $messages['connecterror'] = 'Automatische Antwort nicht gespeichert. Verbindungsfehler.';
+$messages['daemonerror'] = 'Automatische Antwort nicht gespeichert. Daemon fehlgeschlagen.';
 $messages['internalerror'] = 'Automatische Antwort nicht gespeichert.';
 $messages['nomessage'] = 'Bitte geben Sie eine Nachricht für die automatische Antwort ein.';
 

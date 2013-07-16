@@ -24,9 +24,10 @@
  * @link      http://www.i-mscp.net i-MSCP Home Site
  * @license   http://www.gnu.org/licenses/gpl-2.0.html GPL v2
  */
-define('AUTORESPONDER_ERROR', 2);
-define('AUTORESPONDER_CONNECT_ERROR', 3);
-define('AUTORESPONDER_SUCCESS', 0);
+define('IMSCP_AUTORESPONDER_SUCCESS', 0);
+define('IMSCP_AUTORESPONDER_ERROR', 1);
+define('IMSCP_AUTORESPONDER_DAEMON_ERROR', 2);
+define('IMSCP_AUTORESPONDER_CONNECT_ERROR', 3);
 
 class imscp_autoresponder extends rcube_plugin{
 
@@ -130,7 +131,7 @@ class imscp_autoresponder extends rcube_plugin{
 		  )
 		);
 
-		$rcmail->output->add_gui_object('passform', 'imscp_autoresponder-form');
+		$rcmail->output->add_gui_object('autoresponderform', 'imscp_autoresponder-form');
 
 		return $rcmail->output->form_tag(
 			array(
@@ -209,11 +210,13 @@ class imscp_autoresponder extends rcube_plugin{
         $result = $object->save($enable, $message);
 
 		switch ($result) {
-			case AUTORESPONDER_SUCCESS:
+			case IMSCP_AUTORESPONDER_SUCCESS:
 				return;
-			case AUTORESPONDER_CONNECT_ERROR;
+			case IMSCP_AUTORESPONDER_DAEMON_ERROR:
+				return $this->gettext('daemonerror');
+			case IMSCP_AUTORESPONDER_CONNECT_ERROR;
 				return $this->gettext('connecterror');
-			case AUTORESPONDER_ERROR:
+			case IMSCP_AUTORESPONDER_ERROR:
 			default:
 				return $this->gettext('internalerror');
 		}

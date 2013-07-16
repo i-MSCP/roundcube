@@ -32,7 +32,7 @@ if (window.rcmail) {
 		// add button and register commands
 		rcmail.add_element(tab, 'tabs');
 		rcmail.register_command('plugin.imscp_autoresponder-save', function() {
-			rcmail.gui_objects.passform.submit();
+			rcmail.gui_objects.autoresponderform.submit();
 		}, true);
 	})
 }

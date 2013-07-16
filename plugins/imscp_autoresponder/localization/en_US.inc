@@ -33,6 +33,7 @@ $labels['enableautoresponder']  = 'Enable Auto Responder:';
 
 $messages = array();
 $messages['connecterror'] = 'Could not set auto response. Connection error.';
+$messages['daemonerror'] = 'Could not set auto response. Daemon request failed.';
 $messages['internalerror'] = 'Could not set auto response.';
 $messages['nomessage'] = 'Please enter an auto responder message.';
 ?>
