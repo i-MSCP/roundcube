@@ -25,7 +25,7 @@
  * @license   http://www.gnu.org/licenses/gpl-2.0.html GPL v2
  */
 
-function password_save($password)
+function imscp_password_save($password)
 {
 	$rcmail = rcmail::get_instance();
 	$sql = "UPDATE `mail_users` SET `mail_pass` = %p, `status` = 'change' WHERE `mail_addr` = %u LIMIT 1";
@@ -42,11 +42,11 @@ function password_save($password)
 		$db->set_debug((bool)$rcmail->config->get('sql_debug'));
 		$db->db_connect('w');
 	} else {
-		return PASSWORD_ERROR;
+		return IMSCP_PASSWORD_ERROR;
 	}
 
 	if ($err = $db->is_error()) {
-		return PASSWORD_ERROR;
+		return IMSCP_PASSWORD_ERROR;
 	}
 
 	$sql = str_replace('%u', $db->quote($_SESSION['username'], 'text'), $sql);
@@ -55,91 +55,93 @@ function password_save($password)
 	$res = $db->query($sql);
 
 	if (!$db->is_error() && $db->affected_rows($res) == 1) {
-		send_request();
-		return PASSWORD_SUCCESS;
+		if(!imscp_send_request()) {
+			return IMSCP_PASSWORD_DAEMON_ERROR;
+		} else {
+			return IMSCP_PASSWORD_SUCCESS;
+		}
 	}
 
-	return PASSWORD_ERROR;
+	return IMSCP_PASSWORD_ERROR;
 }
 
-function read_line(&$socket)
+/**
+ * Read an answer from i-MSCP daemon
+ *
+ * @param resource &$socket
+ * @return bool TRUE on success, FALSE otherwise
+ */
+function imscp_daemon_readAnswer(&$socket)
 {
-	$line = '';
+	if(($answer = @socket_read($socket, 1024, PHP_NORMAL_READ)) !== false) {
+		list($code) = explode(' ', $answer);
+		if($code == '999') {
+			return false;
+		}
+	} else {
+		return false;
+	}
 
-	do {
-		$ch = socket_read($socket, 1);
-		$line = $line . $ch;
-	} while ($ch != "\r" && $ch != "\n");
-
-	return $line;
+	return true;
 }
 
-function send_request()
+/**
+ * Send a command to i-MSCP daemon
+ *
+ * @param resource &$socket
+ * @param string $command Command
+ * @return bool TRUE on success, FALSE otherwise
+ */
+function imscp_daemon_sendCommand(&$socket, $command)
 {
-	$version = "1.1.0";
+	$command .= "\n";
+	$commandLength = strlen($command);
 
-	//$code = 999;
-
-	@$socket = socket_create(AF_INET, SOCK_STREAM, 0);
-	if ($socket < 0) {
-		$errno = "socket_create() failed.\n";
-		return $errno;
+	while (true) {
+		if (($bytesSent = @socket_write($socket, $command, $commandLength)) !== false) {
+			if ($bytesSent < $commandLength) {
+				$command = substr($command, $bytesSent);
+				$commandLength -= $bytesSent;
+			} else {
+				return true;
+			}
+		} else {
+			return false;
+		}
 	}
 
-	@$result = socket_connect($socket, '127.0.0.1', 9876);
-	if ($result == false) {
-		$errno = "socket_connect() failed.\n";
-		return $errno;
-	}
-
-	// read one line with welcome string
-	$out = read_line($socket);
-
-	list($code) = explode(' ', $out);
-	if ($code == 999) {
-		return $out;
-	}
-
-	// send hello query
-	$query = "helo  $version\r\n";
-	socket_write($socket, $query, strlen($query));
-
-	// read one line with helo answer
-	$out = read_line($socket);
-
-	list($code) = explode(' ', $out);
-	if ($code == 999) {
-		return $out;
-	}
-
-	// send reg check query
-	$query = "execute query\r\n";
-	socket_write($socket, $query, strlen($query));
-	// read one line key replay
-	$execute_reply = read_line($socket);
-
-	list($code) = explode(' ', $execute_reply);
-	if ($code == 999) {
-		return $out;
-	}
-
-	// send quit query
-	$quit_query = "bye\r\n";
-	socket_write($socket, $quit_query, strlen($quit_query));
-
-	// read quit answer
-	$quit_reply = read_line($socket);
-
-	list($code) = explode(' ', $quit_reply);
-
-	if ($code == 999) {
-		return $out;
-	}
-
-	list($answer) = explode(' ', $execute_reply);
-
-	socket_close($socket);
-
-	return $answer;
+	return false;
 }
-?>
+
+/**
+ * Send a request to the daemon
+ *
+ * @return bool TRUE on success, FALSE otherwise
+ */
+function imscp_send_request()
+{
+	if(
+		($socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) !== false &&
+		@socket_connect($socket, '127.0.0.1', 9876) !== false
+	) {
+		if(
+			imscp_daemon_readAnswer($socket) && // Read Welcome message from i-MSCP daemon
+			imscp_daemon_sendCommand($socket, "helo roundcube") && // Send helo command to i-MSCP daemon
+			imscp_daemon_readAnswer($socket) && // Read answer from i-MSCP daemon
+			imscp_daemon_sendCommand($socket, 'execute query') && // Send execute query command to i-MSCP daemon
+			imscp_daemon_readAnswer($socket) && // Read answer from i-MSCP daemon
+			imscp_daemon_sendCommand($socket, 'bye') && // Send bye command to i-MSCP daemon
+			imscp_daemon_readAnswer($socket) // Read answer from i-MSCP daemon
+		) {
+			$ret = true;
+		} else {
+			$ret = false;
+		}
+
+		socket_close($socket);
+	} else {
+		$ret = false;
+	}
+
+	return $ret;
+}

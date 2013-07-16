@@ -33,7 +33,7 @@ $labels['confpasswd']  = 'Confirm New Password:';
 $messages = array();
 $messages['nopassword'] = 'Please input new password.';
 $messages['passwordinconsistency'] = "Passwords doesn't match, please try again.";
-$messages['connecterror'] = 'Could not save new password. Connection error.';
+$messages['daemonerror'] = 'Daemon request failed.';
 $messages['internalerror'] = 'Could not save new password.';
 $messages['passwordlenght'] = 'Password lenght! Min. characters: ';
 ?>

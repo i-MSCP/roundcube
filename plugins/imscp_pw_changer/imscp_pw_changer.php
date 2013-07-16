@@ -24,15 +24,17 @@
  * @link      http://www.i-mscp.net i-MSCP Home Site
  * @license   http://www.gnu.org/licenses/gpl-2.0.html GPL v2
  */
-define('PASSWORD_ERROR', 2);
-define('PASSWORD_CONNECT_ERROR', 3);
-define('PASSWORD_SUCCESS', 0);
 
-class imscp_pw_changer extends rcube_plugin{
+define('IMSCP_PASSWORD_SUCCESS', 0);
+define('IMSCP_PASSWORD_ERROR', 1);
+define('IMSCP_PASSWORD_DAEMON_ERROR', 2);
 
+class imscp_pw_changer extends rcube_plugin
+{
 	public $task = 'settings';
 
-	function init(){
+	function init()
+	{
 		$rcmail = rcmail::get_instance();
 		// add Tab label
 		$rcmail->output->add_label('password');
@@ -41,7 +43,8 @@ class imscp_pw_changer extends rcube_plugin{
 		$this->include_script('password.js');
 	}
 
-	function password_init(){
+	function password_init()
+	{
 		$this->add_texts('localization/');
 		$this->register_handler('plugin.body', array($this, 'password_form'));
 
@@ -50,7 +53,8 @@ class imscp_pw_changer extends rcube_plugin{
 		$rcmail->output->send('plugin');
 	}
 
-	function password_save(){
+	function password_save()
+	{
 		$rcmail = rcmail::get_instance();
 		$this->load_config();
 
@@ -58,36 +62,38 @@ class imscp_pw_changer extends rcube_plugin{
 		$this->register_handler('plugin.body', array($this, 'password_form'));
 		$rcmail->output->set_pagetitle($this->gettext('changepasswd'));
 
-		if((!isset($_POST['_confpasswd'])) || !isset($_POST['_newpasswd'])) {
-		  $rcmail->output->command('display_message', $this->gettext('nopassword'), 'error');
-		}
-		elseif($_POST['_confpasswd'] != $_POST['_newpasswd']) {
-		  $rcmail->output->command('display_message', $this->gettext('passwordinconsistency'), 'error');
-		}
-		elseif (strlen($_POST['_newpasswd']) < $rcmail->config->get('password_length')) {
-		  $rcmail->output->command('display_message', $this->gettext('passwordlenght').$rcmail->config->get('password_length'), 'error');
-		}
-		else {
-		  $newpwd = get_input_value('_newpasswd', RCUBE_INPUT_POST);
-		  if (!($res = $this->_save($newpwd))) {
-			$rcmail->output->command('display_message', $this->gettext('successfullysaved'), 'confirmation');
-			$_SESSION['password'] = $rcmail->encrypt($newpwd);
-		  } else
-			$rcmail->output->command('display_message', $res, 'error');
+		if ((!isset($_POST['_confpasswd'])) || !isset($_POST['_newpasswd'])) {
+			$rcmail->output->command('display_message', $this->gettext('nopassword'), 'error');
+		} elseif ($_POST['_confpasswd'] != $_POST['_newpasswd']) {
+			$rcmail->output->command('display_message', $this->gettext('passwordinconsistency'), 'error');
+		} elseif (strlen($_POST['_newpasswd']) < $rcmail->config->get('password_length')) {
+			$rcmail->output->command(
+				'display_message', $this->gettext('passwordlenght') . $rcmail->config->get('password_length'), 'error'
+			);
+		} else {
+			$newpwd = get_input_value('_newpasswd', RCUBE_INPUT_POST);
+
+			if (!($res = $this->_save($newpwd))) {
+				$rcmail->output->command('display_message', $this->gettext('successfullysaved'), 'confirmation');
+				$_SESSION['password'] = $rcmail->encrypt($newpwd);
+			} else {
+				$rcmail->output->command('display_message', $res, 'error');
+			}
 		}
 
 		rcmail_overwrite_action('plugin.imscp_pw_changer');
 		$rcmail->output->send('plugin');
 	}
 
-	function password_form(){
+	function password_form()
+	{
 		$rcmail = rcmail::get_instance();
 		$this->load_config();
 
 		// add some labels to client
 		$rcmail->output->add_label(
-		  'imscp_pw_changer.nopassword',
-		  'imscp_pw_changer.passwordinconsistency'
+			'imscp_pw_changer.nopassword',
+			'imscp_pw_changer.passwordinconsistency'
 		);
 
 		$rcmail->output->set_env('product_name', $rcmail->config->get('product_name'));
@@ -97,30 +103,36 @@ class imscp_pw_changer extends rcube_plugin{
 		// show new password selection
 		$field_id = 'newpasswd';
 		$input_newpasswd = new html_passwordfield(array('name' => '_newpasswd', 'id' => $field_id,
-		  'size' => 20, 'autocomplete' => 'off'));
+			'size' => 20, 'autocomplete' => 'off'));
 
 		$table->add('title', html::label($field_id, Q($this->gettext('newpasswd'))));
 		$table->add(null, $input_newpasswd->show());
 
 		// show confirm password selection
 		$field_id = 'confpasswd';
-		$input_confpasswd = new html_passwordfield(array('name' => '_confpasswd', 'id' => $field_id,
-		  'size' => 20, 'autocomplete' => 'off'));
+		$input_confpasswd = new html_passwordfield(
+			array('name' => '_confpasswd', 'id' => $field_id, 'size' => 20, 'autocomplete' => 'off')
+		);
 
 		$table->add('title', html::label($field_id, Q($this->gettext('confpasswd'))));
 		$table->add(null, $input_confpasswd->show());
 
 		$out = html::div(array('class' => 'box'),
-		  html::div(array('id' => "prefs-title", 'class' => 'boxtitle'), $this->gettext('changepasswd')) .
-		  html::div(array('class' => 'boxcontent'), $table->show() .
-			html::p(null,
-			  $rcmail->output->button(array(
-				'command' => 'plugin.imscp_pw_changer-save',
-				'type' => 'input',
-				'class' => 'button mainaction',
-				'label' => 'save'
-			)))
-		  )
+			html::div(array('id' => "prefs-title", 'class' => 'boxtitle'), $this->gettext('changepasswd')) .
+			html::div(
+				array('class' => 'boxcontent'),
+				$table->show() . html::p(
+					null,
+					$rcmail->output->button(
+						array(
+							'command' => 'plugin.imscp_pw_changer-save',
+							'type' => 'input',
+							'class' => 'button mainaction',
+							'label' => 'save'
+						)
+					)
+				)
+			)
 		);
 
 		$rcmail->output->add_gui_object('passform', 'imscp_pw_changer-form');
@@ -136,9 +148,10 @@ class imscp_pw_changer extends rcube_plugin{
 		);
 	}
 
-	private function _save($passwd){
+	private function _save($passwd)
+	{
 		$config = rcmail::get_instance()->config;
-		$driver = $this->home.'/drivers/'.$config->get('password_driver', 'sql').'.php';
+		$driver = $this->home . '/drivers/' . $config->get('password_driver', 'sql') . '.php';
 
 		if (!is_readable($driver)) {
 			raise_error(
@@ -154,27 +167,33 @@ class imscp_pw_changer extends rcube_plugin{
 			return $this->gettext('internalerror');
 		}
 
-		include($driver);
+		include_once($driver);
 
-		if (!function_exists('password_save')) {
-			raise_error(array(
-				'code' => 600,
-				'type' => 'php',
-				'file' => __FILE__,
-				'message' => "Password plugin: Broken driver: $driver"
-			), true, false);
+		if (!function_exists('imscp_password_save')) {
+			raise_error(
+				array(
+					'code' => 600,
+					'type' => 'php',
+					'file' => __FILE__,
+					'message' => "Password plugin: Broken driver: $driver"
+				),
+				true,
+				false
+			);
 			return $this->gettext('internalerror');
 		}
-		$result = password_save($passwd);
+
+		$result = imscp_password_save($passwd);
+
 		switch ($result) {
-			case PASSWORD_SUCCESS:
+			case IMSCP_PASSWORD_SUCCESS:
 				return;
-			case PASSWORD_CONNECT_ERROR;
-				return $this->gettext('connecterror');
-			case PASSWORD_ERROR:
+			case IMSCP_PASSWORD_DAEMON_ERROR:
+				return $this->gettext('daemonerror');
+				break;
+			case IMSCP_PASSWORD_ERROR:
 			default:
 				return $this->gettext('internalerror');
 		}
 	}
 }
-?>

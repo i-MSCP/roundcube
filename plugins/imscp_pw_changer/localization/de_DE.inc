@@ -33,7 +33,7 @@ $labels['confpasswd']  = 'Passwort Wiederholung';
 $messages = array();
 $messages['nopassword'] = 'Bitte geben Sie ein neues Passwort ein';
 $messages['passwordinconsistency'] = 'Das neue Passwort und dessen Wiederholung stimmen nicht überein';
-$messages['connecterror'] = 'Neues Passwort nicht gespeichert: Verbindungsfehler';
+$messages['daemonerror'] = 'Daemon fehlgeschlagen.';
 $messages['internalerror'] = 'Neues Passwort nicht gespeichert';
 $messages['passwordlenght'] = 'Password hat zu wenig Zeichen! Vorgabe sind: ';
 ?>
