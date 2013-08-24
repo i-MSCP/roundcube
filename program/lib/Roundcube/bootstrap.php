@@ -45,7 +45,8 @@ if (php_sapi_name() != 'cli') {
 }
 
 foreach ($config as $optname => $optval) {
-    if ($optval != ini_get($optname) && @ini_set($optname, $optval) === false) {
+    $ini_optval = filter_var(ini_get($optname), FILTER_VALIDATE_BOOLEAN);
+    if ($optval != $ini_optval && @ini_set($optname, $optval) === false) {
         $error = "ERROR: Wrong '$optname' option value and it wasn't possible to set it to required value ($optval).\n"
             . "Check your PHP configuration (including php_admin_flag).";
         if (defined('STDERR')) fwrite(STDERR, $error); else echo $error;
@@ -54,7 +55,7 @@ foreach ($config as $optname => $optval) {
 }
 
 // framework constants
-define('RCUBE_VERSION', '0.9.2');
+define('RCUBE_VERSION', '0.9.3');
 define('RCUBE_CHARSET', 'UTF-8');
 
 if (!defined('RCUBE_LIB_DIR')) {
@@ -81,6 +82,13 @@ if (!defined('RCUBE_LOCALIZATION_DIR')) {
 if (extension_loaded('mbstring')) {
     mb_internal_encoding(RCUBE_CHARSET);
     @mb_regex_encoding(RCUBE_CHARSET);
+}
+
+// make sure the lib directory is in the include_path
+$rcube_include_path = realpath(RCUBE_LIB_DIR . '..');
+$sep = PATH_SEPARATOR;
+if (!preg_match("!(^|$sep)$rcube_include_path($sep|\$)!", ini_get('include_path'))) {
+    set_include_path(ini_get('include_path') . PATH_SEPARATOR . $rcube_include_path);
 }
 
 // Register autoloader
