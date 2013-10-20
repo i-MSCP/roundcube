@@ -372,7 +372,7 @@ $rcmail_config['client_mimetypes'] = null;  # null == default
 
 // Path to a local mime magic database file for PHPs finfo extension.
 // Set to null if the default path should be used.
-$rcmail_config['mime_magic'] = '/usr/share/misc/magic';
+$rcmail_config['mime_magic'] = null;
 
 // Absolute path to a local mime.types mapping table file.
 // This is used to derive mime-types from the filename extension or vice versa.
