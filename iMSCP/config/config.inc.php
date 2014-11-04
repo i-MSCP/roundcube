@@ -64,7 +64,6 @@ $config['imap_force_lsub'] = true;
 // %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
 // %z - IMAP domain (IMAP hostname without the first part)
 // For example %n = mail.domain.tld, %t = domain.tld
-#$config['smtp_server'] = 'smtp.{BASE_SERVER_VHOST}';
 $config['smtp_server'] = 'smtp.{BASE_SERVER_VHOST}';
 
 // SMTP username (if required) if you use %u as the username Roundcube
