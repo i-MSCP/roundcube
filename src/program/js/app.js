@@ -983,12 +983,9 @@ function rcube_webmail()
         url = {};
 
         if (this.task == 'mail') {
-          url._mbox = this.env.mailbox;
+          url = {_mbox: this.env.mailbox, _search: this.env.search_request};
           if (props)
             url._to = props;
-          // also send search request so we can go back to search result after message is sent
-          if (this.env.search_request)
-            url._search = this.env.search_request;
         }
         // modify url if we're in addressbook
         else if (this.task == 'addressbook') {
@@ -1089,9 +1086,9 @@ function rcube_webmail()
       case 'reply-list':
       case 'reply':
         if (uid = this.get_single_uid()) {
-          url = {_reply_uid: uid, _mbox: this.env.mailbox};
+          url = {_reply_uid: uid, _mbox: this.env.mailbox, _search: this.env.search_request};
+          // do reply-list, when list is detected and popup menu wasn't used
           if (command == 'reply-all')
-            // do reply-list, when list is detected and popup menu wasn't used
             url._all = (!props && this.env.reply_all_mode == 1 && this.commands['reply-list'] ? 'list' : 'all');
           else if (command == 'reply-list')
             url._all = 'list';
@@ -1811,7 +1808,7 @@ function rcube_webmail()
     // attach events
     $.each(fn, function(i, f) {
       row[i].onclick = function(e) { f(e); return rcube_event.cancel(e); };
-      if (bw.touch) {
+      if (bw.touch && row[i].addEventListener) {
         row[i].addEventListener('touchend', function(e) {
           if (e.changedTouches.length == 1) {
             f(e);
@@ -2083,7 +2080,7 @@ function rcube_webmail()
       if (preview && this.message_list && this.message_list.rows[id] && this.message_list.rows[id].unread && this.env.preview_pane_mark_read > 0) {
         this.preview_read_timer = setTimeout(function() {
           ref.set_unread_message(id, ref.env.mailbox);
-          ref.http_post('mark', {_uid: id, _flag: 'read', _quiet: 1});
+          ref.http_post('mark', {_uid: id, _flag: 'read', _mbox: ref.env.mailbox, _quiet: 1});
         }, this.env.preview_pane_mark_read * 1000);
       }
     }
@@ -3669,14 +3666,13 @@ function rcube_webmail()
 
   this.set_draft_id = function(id)
   {
-    var rc;
-
     if (id && id != this.env.draft_id) {
-      if (rc = this.opener()) {
-        // refresh the drafts folder in opener window
-        if (rc.env.task == 'mail' && rc.env.action == '' && rc.env.mailbox == this.env.drafts_mailbox)
-          rc.command('checkmail');
-      }
+      var filter = {task: 'mail', action: ''},
+        rc = this.opener(false, filter) || this.opener(true, filter);
+
+      // refresh the drafts folder in the opener window
+      if (rc && rc.env.mailbox == this.env.drafts_mailbox)
+        rc.command('checkmail');
 
       this.env.draft_id = id;
       $("input[name='_draft_saveid']").val(id);
@@ -7457,12 +7453,24 @@ function rcube_webmail()
   };
 
   // get window.opener.rcmail if available
-  this.opener = function()
+  this.opener = function(deep, filter)
   {
+    var i, win = window.opener;
+
     // catch Error: Permission denied to access property rcmail
     try {
-      if (window.opener && !opener.closed && opener.rcmail)
-        return opener.rcmail;
+      if (win && !win.closed) {
+        // try parent of the opener window, e.g. preview frame
+        if (deep && (!win.rcmail || win.rcmail.env.framed) && win.parent && win.parent.rcmail)
+          win = win.parent;
+
+        if (win.rcmail && filter)
+          for (i in filter)
+            if (win.rcmail.env[i] != filter[i])
+              return;
+
+        return win.rcmail;
+      }
     }
     catch (e) {}
   };
@@ -7680,7 +7688,7 @@ function rcube_webmail()
     if (plugin && plugin.enabledPlugin)
         return 1;
 
-    if (window.ActiveXObject) {
+    if ('ActiveXObject' in window) {
       try {
         if (axObj = new ActiveXObject("AcroPDF.PDF"))
           return 1;
@@ -7713,7 +7721,7 @@ function rcube_webmail()
     if (plugin && plugin.enabledPlugin)
         return 1;
 
-    if (window.ActiveXObject) {
+    if ('ActiveXObject' in window) {
       try {
         if (axObj = new ActiveXObject("ShockwaveFlash.ShockwaveFlash"))
           return 1;
