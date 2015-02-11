@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  +-----------------------------------------------------------------------+
  | This file is part of the Roundcube Webmail client                     |
  | Copyright (C) 2008-2012, The Roundcube Dev Team                       |
@@ -18,7 +18,7 @@
  +-----------------------------------------------------------------------+
  */
 
-/**
+/*
  *                Washtml, a HTML sanityzer.
  *
  * Copyright (c) 2007 Frederic Motte <fmotte@ubixis.com>
@@ -95,6 +95,7 @@ class rcube_washtml
         'ins', 'label', 'legend', 'li', 'map', 'menu', 'nobr', 'ol', 'p', 'pre', 'q',
         's', 'samp', 'small', 'span', 'strike', 'strong', 'sub', 'sup', 'table',
         'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'tt', 'u', 'ul', 'var', 'wbr', 'img',
+        'video', 'source',
         // form elements
         'button', 'input', 'textarea', 'select', 'option', 'optgroup'
     );
@@ -246,7 +247,10 @@ class rcube_washtml
                 // replace double quotes to prevent syntax error and XSS issues (#1490227)
                 $t .= ' style="' . str_replace('"', '&quot;', $style) . '"';
             }
-            else if ($key == 'background' || ($key == 'src' && strtolower($node->tagName) == 'img')) { //check tagName anyway
+            else if ($key == 'background'
+                || ($key == 'src' && preg_match('/^(img|source)$/i', $node->tagName))
+                || ($key == 'poster' && strtolower($node->tagName) == 'video')
+            ) {
                 if (($src = $this->config['cid_map'][$value])
                     || ($src = $this->config['cid_map'][$this->config['base_url'].$value])
                 ) {
@@ -374,7 +378,7 @@ class rcube_washtml
         $this->max_nesting_level = (int) @ini_get('xdebug.max_nesting_level');
 
         // Use optimizations if supported
-        if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+        if (PHP_VERSION_ID >= 50400) {
             @$node->loadHTML($html, LIBXML_PARSEHUGE | LIBXML_COMPACT);
         }
         else {
