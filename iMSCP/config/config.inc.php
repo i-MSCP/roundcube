@@ -41,7 +41,8 @@ $config['db_dsnw'] = 'mysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 // For example %n = mail.domain.tld, %t = domain.tld
 // WARNING: After hostname change update of mail_host column in users table is
 //          required to match old user data records with the new host.
-$config['default_host'] = 'imap.{BASE_SERVER_VHOST}';
+#$config['default_host'] = 'imap.{BASE_SERVER_VHOST}';
+$config['default_host'] = 'localhost';
 
 // By default list of subscribed folders is determined using LIST-EXTENDED
 // extension if available. Some servers (dovecot 1.x) returns wrong results
@@ -64,7 +65,8 @@ $config['imap_force_lsub'] = true;
 // %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
 // %z - IMAP domain (IMAP hostname without the first part)
 // For example %n = mail.domain.tld, %t = domain.tld
-$config['smtp_server'] = 'smtp.{BASE_SERVER_VHOST}';
+#$config['smtp_server'] = 'smtp.{BASE_SERVER_VHOST}';
+$config['smtp_server'] = 'localhost';
 
 // SMTP username (if required) if you use %u as the username Roundcube
 // will use the current username for login
