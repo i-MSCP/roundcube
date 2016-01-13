@@ -225,6 +225,17 @@ EOF;
      */
     public function set_skin($skin)
     {
+        // Sanity check to prevent from path traversal vulnerability (#1490620)
+        if (strpos($skin, '/') !== false || strpos($skin, "\\") !== false) {
+            rcube::raise_error(array(
+                    'file'    => __FILE__,
+                    'line'    => __LINE__,
+                    'message' => 'Invalid skin name'
+                ), true, false);
+
+            return false;
+        }
+
         $valid = false;
         $path  = RCUBE_INSTALL_PATH . 'skins/';
 
@@ -584,7 +595,7 @@ EOF;
         // read template file
         if (!$path || ($templ = @file_get_contents($path)) === false) {
             rcube::raise_error(array(
-                'code' => 501,
+                'code' => 404,
                 'type' => 'php',
                 'line' => __LINE__,
                 'file' => __FILE__,

@@ -78,15 +78,14 @@ else if ($_GET['_thumb']) {
     if ($part = $MESSAGE->mime_parts[$pid]) {
         $thumbnail_size = $RCMAIL->config->get('image_thumbnail_size', 240);
         $temp_dir       = $RCMAIL->config->get('temp_dir');
-        list(,$ext)     = explode('/', $part->mimetype);
         $mimetype       = $part->mimetype;
         $file_ident     = $MESSAGE->headers->messageID . ':' . $part->mime_id . ':' . $part->size . ':' . $part->mimetype;
         $cache_basename = $temp_dir . '/' . md5($file_ident . ':' . $RCMAIL->user->ID . ':' . $thumbnail_size);
-        $cache_file     = $cache_basename . '.' . $ext;
+        $cache_file     = $cache_basename . '.thumb';
 
         // render thumbnail image if not done yet
         if (!is_file($cache_file)) {
-            if ($fp = fopen(($orig_name = $cache_basename . '.orig.' . $ext), 'w')) {
+            if ($fp = fopen(($orig_name = $cache_basename . '.tmp'), 'w')) {
                 $MESSAGE->get_part_body($part->mime_id, false, 0, $fp);
                 fclose($fp);
 
@@ -362,9 +361,8 @@ else if (strlen($part_id)) {
                     $sent = true;
                 }
                 else if ($part->size) {
-                    if ($size = (int)$part->d_parameters['size']) {
-                        header("Content-Length: $size");
-                    }
+                    // Don't be tempted to set Content-Length to $part->d_parameters['size'] (#1490482)
+                    // RFC2183 says "The size parameter indicates an approximate size"
 
                     $sent = $MESSAGE->get_part_body($part->mime_id, false, 0, -1);
                 }

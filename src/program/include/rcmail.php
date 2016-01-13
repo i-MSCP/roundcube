@@ -174,9 +174,11 @@ class rcmail extends rcube
         // set localization
         setlocale(LC_ALL, $lang . '.utf8', $lang . '.UTF-8', 'en_US.utf8', 'en_US.UTF-8');
 
-        // workaround for http://bugs.php.net/bug.php?id=18556
-        if (PHP_VERSION_ID < 50500 && in_array($lang, array('tr_TR', 'ku', 'az_AZ'))) {
-            setlocale(LC_CTYPE, 'en_US.utf8', 'en_US.UTF-8');
+        // Workaround for http://bugs.php.net/bug.php?id=18556
+        // Also strtoupper/strtolower and other methods are locale-aware
+        // for these locales it is problematic (#1490519)
+        if (in_array($lang, array('tr_TR', 'ku', 'az_AZ'))) {
+            setlocale(LC_CTYPE, 'en_US.utf8', 'en_US.UTF-8', 'C');
         }
     }
 
@@ -590,6 +592,8 @@ class rcmail extends rcube
 
         // try to log in
         if (!$storage->connect($host, $username, $pass, $port, $ssl)) {
+            // Wait a second to slow down brute-force attacks (#1490549)
+            sleep(1);
             return false;
         }
 
@@ -1584,7 +1588,7 @@ class rcmail extends rcube
             // skip folders in which it isn't possible to create subfolders
             if (!empty($opts['skip_noinferiors'])) {
                 $attrs = $this->storage->folder_attributes($folder['id']);
-                if ($attrs && in_array('\\Noinferiors', $attrs)) {
+                if ($attrs && in_array_nocase('\\Noinferiors', $attrs)) {
                     continue;
                 }
             }
@@ -1820,7 +1824,7 @@ class rcmail extends rcube
             }
             else {
                 $error = 'servererrormsg';
-                $args  = array('msg' => $err_str);
+                $args  = array('msg' => rcube::Q($err_str));
             }
         }
         else if ($err_code < 0) {
@@ -2071,16 +2075,15 @@ class rcmail extends rcube
             if (!empty($_GET['_thumbnail'])) {
                 $temp_dir       = $this->config->get('temp_dir');
                 $thumbnail_size = 80;
-                list(,$ext)     = explode('/', $file['mimetype']);
                 $mimetype       = $file['mimetype'];
                 $file_ident     = $file['id'] . ':' . $file['mimetype'] . ':' . $file['size'];
                 $cache_basename = $temp_dir . '/' . md5($file_ident . ':' . $this->user->ID . ':' . $thumbnail_size);
-                $cache_file     = $cache_basename . '.' . $ext;
+                $cache_file     = $cache_basename . '.thumb';
 
                 // render thumbnail image if not done yet
                 if (!is_file($cache_file)) {
                     if (!$file['path']) {
-                        $orig_name = $filename = $cache_basename . '.orig.' . $ext;
+                        $orig_name = $filename = $cache_basename . '.tmp';
                         file_put_contents($orig_name, $file['data']);
                     }
                     else {

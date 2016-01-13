@@ -48,8 +48,6 @@ class rcube_imap_generic
         '*'        => '\\*',
     );
 
-    public static $mupdate;
-
     protected $fp;
     protected $host;
     protected $logged = false;
@@ -1147,7 +1145,7 @@ class rcube_imap_generic
         }
 
         // Clear internal status cache
-        unset($this->data['STATUS:'.$mailbox]);
+        $this->clear_status_cache($mailbox);
 
         if (!empty($messages) && $messages != '*' && $this->hasCapability('UIDPLUS')) {
             $messages = self::compressMessageSet($messages);
@@ -1462,13 +1460,9 @@ class rcube_imap_generic
      *
      * @return int Number of messages, False on error
      */
-    function countMessages($mailbox, $refresh = false)
+    function countMessages($mailbox)
     {
-        if ($refresh) {
-            $this->selected = null;
-        }
-
-        if ($this->selected === $mailbox) {
+        if ($this->selected === $mailbox && isset($this->data['EXISTS'])) {
             return $this->data['EXISTS'];
         }
 
@@ -1496,14 +1490,20 @@ class rcube_imap_generic
      */
     function countRecent($mailbox)
     {
-        if (!strlen($mailbox)) {
-            $mailbox = 'INBOX';
+        if ($this->selected === $mailbox && isset($this->data['RECENT'])) {
+            return $this->data['RECENT'];
         }
 
-        $this->select($mailbox);
+        // Check internal cache
+        $cache = $this->data['STATUS:'.$mailbox];
+        if (!empty($cache) && isset($cache['RECENT'])) {
+            return (int) $cache['RECENT'];
+        }
 
-        if ($this->selected === $mailbox) {
-            return $this->data['RECENT'];
+        // Try STATUS (should be faster than SELECT)
+        $counts = $this->status($mailbox, array('RECENT'));
+        if (is_array($counts)) {
+            return (int) $counts['RECENT'];
         }
 
         return false;
@@ -2124,7 +2124,7 @@ class rcube_imap_generic
 
             // Clear internal status cache
             unset($this->data['STATUS:'.$to]);
-            unset($this->data['STATUS:'.$from]);
+            $this->clear_status_cache($from);
 
             $result = $this->execute('UID MOVE', array(
                 $this->compressMessageSet($messages), $this->escape($to)),
@@ -2438,7 +2438,16 @@ class rcube_imap_generic
         return false;
     }
 
-    function sortHeaders($a, $field, $flag)
+    /**
+     * Sort messages by specified header field
+     *
+     * @param array  $messages Array of rcube_message_header objects
+     * @param string $field    Name of the property to sort by
+     * @param string $flag     Sorting order (ASC|DESC)
+     *
+     * @return array Sorted input array
+     */
+    public static function sortHeaders($messages, $field, $flag)
     {
         if (empty($field)) {
             $field = 'uid';
@@ -2447,57 +2456,65 @@ class rcube_imap_generic
             $field = strtolower($field);
         }
 
-        if ($field == 'date' || $field == 'internaldate') {
-            $field = 'timestamp';
-        }
-
         if (empty($flag)) {
             $flag = 'ASC';
-        } else {
+        }
+        else {
             $flag = strtoupper($flag);
         }
 
-        $c = count($a);
-        if ($c > 0) {
-            // Strategy:
-            // First, we'll create an "index" array.
-            // Then, we'll use sort() on that array,
-            // and use that to sort the main array.
+        // Strategy: First, we'll create an "index" array.
+        // Then, we'll use sort() on that array, and use that to sort the main array.
 
-            // create "index" array
-            $index = array();
-            reset($a);
-            while (list($key, $val) = each($a)) {
-                if ($field == 'timestamp') {
-                    $data = $this->strToTime($val->date);
-                    if (!$data) {
-                        $data = $val->timestamp;
-                    }
-                } else {
-                    $data = $val->$field;
-                    if (is_string($data)) {
-                        $data = str_replace('"', '', $data);
-                        if ($field == 'subject') {
-                            $data = preg_replace('/^(Re: \s*|Fwd:\s*|Fw:\s*)+/i', '', $data);
-                        }
-                        $data = strtoupper($data);
-                    }
+        $index  = array();
+        $result = array();
+
+        reset($messages);
+
+        while (list($key, $headers) = each($messages)) {
+            $value = null;
+
+            switch ($field) {
+            case 'arrival':
+                $field = 'internaldate';
+            case 'date':
+            case 'internaldate':
+            case 'timestamp':
+                $value = self::strToTime($headers->$field);
+                if (!$value && $field != 'timestamp') {
+                    $value = $headers->timestamp;
                 }
-                $index[$key] = $data;
+
+                break;
+
+            default:
+                // @TODO: decode header value, convert to UTF-8
+                $value = $headers->$field;
+                if (is_string($value)) {
+                    $value = str_replace('"', '', $value);
+                    if ($field == 'subject') {
+                        $value = preg_replace('/^(Re:\s*|Fwd:\s*|Fw:\s*)+/i', '', $value);
+                    }
+
+                    $data = strtoupper($value);
+                }
             }
 
+            $index[$key] = $value;
+        }
+
+        if (!empty($index)) {
             // sort index
             if ($flag == 'ASC') {
                 asort($index);
-            } else {
+            }
+            else {
                 arsort($index);
             }
 
             // form new array based on index
-            $result = array();
-            reset($index);
             while (list($key, $val) = each($index)) {
-                $result[$key] = $a[$key];
+                $result[$key] = $messages[$key];
             }
         }
 
@@ -3271,11 +3288,6 @@ class rcube_imap_generic
         }
 
         foreach ($data as $entry) {
-            // Workaround cyrus-murder bug, the entry[2] string needs to be escaped
-            if (self::$mupdate) {
-                $entry[2] = addcslashes($entry[2], '\\"');
-            }
-
             // ANNOTATEMORE drafts before version 08 require quoted parameters
             $entries[] = sprintf('%s (%s %s)', $this->escape($entry[0], true),
                 $this->escape($entry[1], true), $this->escape($entry[2], true));
@@ -3768,6 +3780,17 @@ class rcube_imap_generic
     }
 
     /**
+     * Clear internal status cache
+     */
+    protected function clear_status_cache($mailbox)
+    {
+        unset($this->data['STATUS:' . $mailbox]);
+        unset($this->data['EXISTS']);
+        unset($this->data['RECENT']);
+        unset($this->data['UNSEEN']);
+    }
+
+    /**
      * Converts flags array into string for inclusion in IMAP command
      *
      * @param array $flags Flags (see self::flags)
@@ -3838,10 +3861,6 @@ class rcube_imap_generic
 
         if (!isset($this->prefs['literal+']) && in_array('LITERAL+', $this->capability)) {
             $this->prefs['literal+'] = true;
-        }
-
-        if (preg_match('/(\[| )MUPDATE=.*/', $str)) {
-            self::$mupdate = true;
         }
 
         if ($trusted) {

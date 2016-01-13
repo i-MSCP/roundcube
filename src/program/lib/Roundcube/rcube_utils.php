@@ -993,12 +993,18 @@ class rcube_utils
      */
     public static function words_match($haystack, $needle)
     {
-        $a_needle = self::tokenize_string($needle, 1);
-        $haystack = join(" ", self::tokenize_string($haystack, 1));
+        $a_needle  = self::tokenize_string($needle, 1);
+        $_haystack = join(" ", self::tokenize_string($haystack, 1));
+        $valid     = strlen($_haystack) > 0;
+        $hits      = 0;
 
-        $hits = 0;
         foreach ($a_needle as $w) {
-            if (stripos($haystack, $w) !== false) {
+            if ($valid) {
+                if (stripos($_haystack, $w) !== false) {
+                    $hits++;
+                }
+            }
+            else if (stripos($haystack, $w) !== false) {
                 $hits++;
             }
         }
@@ -1137,5 +1143,35 @@ class rcube_utils
         }
 
         return $url;
+    }
+
+    /**
+     * Generate a ramdom string
+     *
+     * @param int String length
+     *
+     * @return string The generated random string
+     */
+    public static function random_bytes($length)
+    {
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            $random = openssl_random_pseudo_bytes(ceil($length / 2));
+            $random = bin2hex($random);
+
+            // if the length wasn't even...
+            if ($length < strlen($random)) {
+                $random = substr($random, 0, $length);
+            }
+        }
+        else {
+            $alpha  = 'ABCDEFGHIJKLMNOPQERSTUVXYZabcdefghijklmnopqrtsuvwxyz0123456789+*%&?!$-_=';
+            $random = '';
+
+            for ($i = 0; $i < $length; $i++) {
+                $random .= $alpha[rand(0, strlen($alpha)-1)];
+            }
+        }
+
+        return $random;
     }
 }
