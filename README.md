@@ -3,4 +3,4 @@
 Repository which provides the i-MSCP Roundcube composer package. This package is automatically fetched and installed
 by the i-MSCP installer when needed.
 
-Upstream release: 1.1.5
+Upstream release: 1.1.x Serie
