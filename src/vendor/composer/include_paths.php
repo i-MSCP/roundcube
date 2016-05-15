@@ -16,6 +16,6 @@ return array(
     $vendorDir . '/pear-pear.php.net/Net_Socket',
     $vendorDir . '/pear-pear.php.net/Net_Sieve',
     $vendorDir . '/pear-pear.php.net/Net_SMTP',
-    $vendorDir . '/pear-pear.php.net/Net_LDAP2',
     $vendorDir . '/pear-pear.php.net/Mail_Mime',
+    $vendorDir . '/pear-pear.php.net/Net_LDAP2',
 );

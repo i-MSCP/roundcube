@@ -57,7 +57,7 @@
         "version_normalized": "1.0.6.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/Auth_SASL-1.0.6.tgz",
+            "url": "https://pear.php.net/get/Auth_SASL-1.0.6.tgz",
             "reference": null,
             "shasum": null
         },
@@ -88,7 +88,7 @@
         "version_normalized": "0.1.1.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/Net_IDNA2-0.1.1.tgz",
+            "url": "https://pear.php.net/get/Net_IDNA2-0.1.1.tgz",
             "reference": null,
             "shasum": null
         },
@@ -119,7 +119,7 @@
         "version_normalized": "1.4.1.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/Console_Getopt-1.4.1.tgz",
+            "url": "https://pear.php.net/get/Console_Getopt-1.4.1.tgz",
             "reference": null,
             "shasum": null
         },
@@ -146,11 +146,11 @@
     },
     {
         "name": "pear-pear.php.net/Archive_Tar",
-        "version": "1.4.0",
-        "version_normalized": "1.4.0.0",
+        "version": "1.4.2",
+        "version_normalized": "1.4.2.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/Archive_Tar-1.4.0.tgz",
+            "url": "https://pear.php.net/get/Archive_Tar-1.4.2.tgz",
             "reference": null,
             "shasum": null
         },
@@ -158,7 +158,7 @@
             "php": ">=5.2.0.0"
         },
         "replace": {
-            "pear-pear/archive_tar": "== 1.4.0.0"
+            "pear-pear/archive_tar": "== 1.4.2.0"
         },
         "type": "pear-library",
         "installation-source": "dist",
@@ -181,7 +181,7 @@
         "version_normalized": "1.1.1.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/Structures_Graph-1.1.1.tgz",
+            "url": "https://pear.php.net/get/Structures_Graph-1.1.1.tgz",
             "reference": null,
             "shasum": null
         },
@@ -212,7 +212,7 @@
         "version_normalized": "1.3.0.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/XML_Util-1.3.0.tgz",
+            "url": "https://pear.php.net/get/XML_Util-1.3.0.tgz",
             "reference": null,
             "shasum": null
         },
@@ -244,7 +244,7 @@
         "version_normalized": "1.10.1.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/PEAR-1.10.1.tgz",
+            "url": "https://pear.php.net/get/PEAR-1.10.1.tgz",
             "reference": null,
             "shasum": null
         },
@@ -285,7 +285,7 @@
         "version_normalized": "1.0.14.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/Net_Socket-1.0.14.tgz",
+            "url": "https://pear.php.net/get/Net_Socket-1.0.14.tgz",
             "reference": null,
             "shasum": null
         },
@@ -316,7 +316,7 @@
         "version_normalized": "1.3.4.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/Net_Sieve-1.3.4.tgz",
+            "url": "https://pear.php.net/get/Net_Sieve-1.3.4.tgz",
             "reference": null,
             "shasum": null
         },
@@ -349,7 +349,7 @@
         "version_normalized": "1.7.1.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/Net_SMTP-1.7.1.tgz",
+            "url": "https://pear.php.net/get/Net_SMTP-1.7.1.tgz",
             "reference": null,
             "shasum": null
         },
@@ -376,12 +376,43 @@
         "description": "Provides an implementation of the SMTP protocol using PEAR's Net_Socket class."
     },
     {
+        "name": "pear-pear.php.net/Mail_Mime",
+        "version": "1.9.0",
+        "version_normalized": "1.9.0.0",
+        "dist": {
+            "type": "file",
+            "url": "https://pear.php.net/get/Mail_Mime-1.9.0.tgz",
+            "reference": null,
+            "shasum": null
+        },
+        "require": {
+            "php": ">=5.0.0.0"
+        },
+        "replace": {
+            "pear-pear/mail_mime": "== 1.9.0.0"
+        },
+        "type": "pear-library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                ""
+            ]
+        },
+        "include-path": [
+            "/"
+        ],
+        "license": [
+            "BSD Style"
+        ],
+        "description": "Mail_Mime provides classes to deal with the creation and manipulation of MIME messages.\nIt allows people to create e-mail messages consisting of:\n* Text Parts\n* HTML Parts\n* Inline HTML Images\n* Attachments\n* Attached messages\n\nIt supports big messages, base64 and quoted-printable encodings and\nnon-ASCII characters in filenames, subjects, recipients, etc. encoded\nusing RFC2047 and/or RFC2231."
+    },
+    {
         "name": "pear-pear.php.net/Net_LDAP2",
         "version": "2.1.0",
         "version_normalized": "2.1.0.0",
         "dist": {
             "type": "file",
-            "url": "http://pear.php.net/get/Net_LDAP2-2.1.0.tgz",
+            "url": "https://pear.php.net/get/Net_LDAP2-2.1.0.tgz",
             "reference": null,
             "shasum": null
         },
@@ -408,19 +439,19 @@
         "description": "Net_LDAP2 is the successor of Net_LDAP which is a clone of Perls Net::LDAP\n                object interface to directory servers. It does contain most of Net::LDAPs\n                features but has some own too.\n                 With Net_LDAP2 you have:\n                 * A simple object-oriented interface to connections, searches entries and filters.\n                 * Support for TLS and LDAP v3.\n                 * Simple modification, deletion and creation of LDAP entries.\n                 * Support for schema handling.\n\n                 Net_LDAP2 layers itself on top of PHP's existing ldap extensions."
     },
     {
-        "name": "kolab/Net_LDAP3",
+        "name": "kolab/net_ldap3",
         "version": "dev-master",
         "version_normalized": "9999999-dev",
         "source": {
             "type": "git",
             "url": "https://git.kolab.org/diffusion/PNL/php-net_ldap.git",
-            "reference": "284258cc1438126b75ec5e4acd5788a983ecb95d"
+            "reference": "50896031cf5a56057d4fc632c61ad1c663b7debc"
         },
         "require": {
             "pear-pear/net_ldap2": ">=2.0.12",
             "php": ">=5.3.3"
         },
-        "time": "2015-10-22 09:21:06",
+        "time": "2016-04-05 10:45:39",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -455,37 +486,6 @@
             "pear",
             "vlv"
         ]
-    },
-    {
-        "name": "pear-pear.php.net/Mail_Mime",
-        "version": "1.9.0",
-        "version_normalized": "1.9.0.0",
-        "dist": {
-            "type": "file",
-            "url": "http://pear.php.net/get/Mail_Mime-1.9.0.tgz",
-            "reference": null,
-            "shasum": null
-        },
-        "require": {
-            "php": ">=5.0.0.0"
-        },
-        "replace": {
-            "pear-pear/mail_mime": "== 1.9.0.0"
-        },
-        "type": "pear-library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                ""
-            ]
-        },
-        "include-path": [
-            "/"
-        ],
-        "license": [
-            "BSD Style"
-        ],
-        "description": "Mail_Mime provides classes to deal with the creation and manipulation of MIME messages.\nIt allows people to create e-mail messages consisting of:\n* Text Parts\n* HTML Parts\n* Inline HTML Images\n* Attachments\n* Attached messages\n\nIt supports big messages, base64 and quoted-printable encodings and\nnon-ASCII characters in filenames, subjects, recipients, etc. encoded\nusing RFC2047 and/or RFC2231."
     },
     {
         "name": "patchwork/utf8",

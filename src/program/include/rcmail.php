@@ -813,6 +813,8 @@ class rcmail extends rcube
             // this need to be full url to make redirects work
             $absolute = true;
         }
+        else if ($secure && ($token = $this->get_request_token()))
+            $url .= $delm . '_token=' . urlencode($token);
 
         if ($absolute || $full) {
             // add base path to this Roundcube installation
@@ -1926,7 +1928,8 @@ class rcmail extends rcube
 
         foreach ($emoticons as $idx => $file) {
             // <img title="Cry" src="http://.../program/js/tinymce/plugins/emoticons/img/smiley-cry.gif" border="0" alt="Cry" />
-            $search[]  = '/<img title="[a-z ]+" src="https?:\/\/[a-z0-9_.\/-]+\/tinymce\/plugins\/emoticons\/img\/'.$file.'.gif"[^>]+\/>/i';
+            $file      = preg_quote('program/js/tinymce/plugins/emoticons/img/' . $file . '.gif', '/');
+            $search[]  = '/<img (title="[a-z ]+" )?src="[^"]+' . $file . '"[^>]+\/>/i';
             $replace[] = $idx;
         }
 
@@ -2317,6 +2320,39 @@ class rcmail extends rcube
         }
 
         return file_get_contents($name, false);
+    }
+
+    /**
+     * Converts HTML content into plain text
+     *
+     * @param string $html    HTML content
+     * @param array  $options Conversion parameters (width, links, charset)
+     *
+     * @return string Plain text
+     */
+    public function html2text($html, $options = array())
+    {
+        $default_options = array(
+            'links'   => true,
+            'width'   => 75,
+            'body'    => $html,
+            'charset' => RCUBE_CHARSET,
+        );
+
+        $options = array_merge($default_options, (array) $options);
+
+        // Plugins may want to modify HTML in another/additional way
+        $options = $this->plugins->exec_hook('html2text', $options);
+
+        // Convert to text
+        if (!$options['abort']) {
+            $converter = new rcube_html2text($options['body'],
+                false, $options['links'], $options['width'], $options['charset']);
+
+            $options['body'] = rtrim($converter->get_text());
+        }
+
+        return $options['body'];
     }
 
 

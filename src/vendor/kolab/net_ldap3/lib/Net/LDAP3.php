@@ -1924,9 +1924,7 @@ class Net_LDAP3
     private function config_set_debug($value)
     {
         $this->config['debug'] = (bool) $value;
-        if ((int)($value) > 0) {
-            ldap_set_option(null, LDAP_OPT_DEBUG_LEVEL, (int)($value));
-        }
+        ldap_set_option(null, LDAP_OPT_DEBUG_LEVEL, (int) $value);
     }
 
     /**

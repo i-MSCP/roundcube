@@ -65,15 +65,25 @@ class Net_LDAP3_Result implements Iterator
         $this->result  = $result;
     }
 
+    /**
+     * Property value getter
+     *
+     * @param string $property Property name
+     * @param mixed  $default  Return value if proprty is not set
+     *
+     * @return mixed Property value
+     */
     public function get($property, $default = null)
     {
-        if (isset($this->$property)) {
-            return $this->$property;
-        } else {
-            return $default;
-        }
+        return isset($this->$property) ? $this->$property : $default;
     }
 
+    /**
+     * Property value setter
+     *
+     * @param string $property Property name
+     * @param mixed  $value    Property value
+     */
     public function set($property, $value)
     {
         $this->$property = $value;
@@ -81,14 +91,22 @@ class Net_LDAP3_Result implements Iterator
 
     /**
      * Wrapper for ldap_sort()
+     *
+     * @param string $attr The attribute to use as a key in the sort
+     *
+     * @return bool True on success, False on failure
      */
     public function sort($attr)
     {
-        return ldap_sort($this->conn, $this->result, $attr);
+        // @TODO: Don't use ldap_sort() it's deprecated since PHP7
+        // and will be removed in future
+        return @ldap_sort($this->conn, $this->result, $attr);
     }
 
     /**
      * Get entries count
+     *
+     * @return int Number of entries in the result
      */
     public function count()
     {
@@ -157,5 +175,4 @@ class Net_LDAP3_Result implements Iterator
     {
         return (bool)$this->current;
     }
-
 }
