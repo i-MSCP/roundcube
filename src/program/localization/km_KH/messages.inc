@@ -141,4 +141,3 @@ $messages['nametoolong'] = 'ឈ្មោះវែងពេក';
 $messages['folderupdated'] = 'ផ្លាស់ប្តូរថតបានដោយជោគជ័យ';
 $messages['foldercreated'] = 'បង្កើតថតបានដោយជោគជ័យ';
 $messages['invalidimageformat'] = 'ប្រភេទរូបភាពមិនត្រឹមត្រូវ';
-?>

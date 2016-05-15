@@ -177,4 +177,3 @@ $messages['parentnotwritable'] = 'Non foi posíbel crear/mover o cartafol para o
 $messages['messagetoobig'] = 'A mensaxe é demasiado grande para procesala';
 $messages['attachmentvalidationerror'] = 'ATENCIÓN! Este anexo é sospeitoso porque o seu tipo non coincide co tipo declarado na mensaxe. Se non confías no remite, non deberías abrilo, porque podería conter un virus ou malware.<br/><br/><em>Tipo agardado: $expected; Tipo detectado: $detected</em>';
 $messages['noscriptwarning'] = 'Atención: Este servicio de correo web precisa de Javascript!. Por favor, active javascript nas opción do seu navegador.';
-?>

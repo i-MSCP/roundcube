@@ -117,4 +117,3 @@ $messages['smtptoerror'] = 'SMTP грешка ($code): Не успеав да г
 $messages['smtprecipientserror'] = 'SMTP грешка: Не успеав да ја испарсирам листата на примачи';
 $messages['smtperror'] = 'SMTP Error: $msg';
 $messages['emailformaterror'] = 'Неправилна поштенска адреса: $email';
-?>

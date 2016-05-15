@@ -65,4 +65,3 @@ $messages['fileuploaderror'] = 'फाईल अपलोड हुन असफ
 $messages['filesizeerror'] = 'अपलोड गरिएको फाईल हद $size भन्दा ठूलो छ';
 $messages['sourceisreadonly'] = 'यो ठेगाना को श्रोत पढ्नको लागि मात्र उपलब्ध छ';
 $messages['errorsavingcontact'] = 'स्मपर्कको ठेगाना जोगाउन सकिएन';
-?>

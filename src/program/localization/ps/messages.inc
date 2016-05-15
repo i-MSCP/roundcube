@@ -80,4 +80,3 @@ $messages['importwait'] = 'نقلوي...صبر وکړئ';
 $messages['importconfirm'] = '<b>په بشپړه توګه نقل شو $اړيکلوري داخل شول, $شته تيرشوي انټاير څخه تيرشول</b>:<p><em>$نومونه</em></p>';
 $messages['opnotpermitted'] = 'چار اجازه نه لري';
 $messages['nofromaddress'] = 'په ټاکل شوي پيژندنه کې برېښناليک پتې له لاسه ورکړي';
-?>

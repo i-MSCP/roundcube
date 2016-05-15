@@ -65,4 +65,3 @@ $messages['fileuploaderror'] = 'Theip an suas-luchtú';
 $messages['filesizeerror'] = 'Beigh an comhad ró-mhor. Is ea $size uas-saghas chun admháil léite';
 $messages['sourceisreadonly'] = 'Tá an foinse seolaigh seo inléite amháin';
 $messages['errorsavingcontact'] = 'Theip mé, Níl an cumas agam an seolagh seo a sábháil';
-?>

@@ -77,4 +77,3 @@ $messages['receiptsent'] = 'Sukcese sendis konfirmon';
 $messages['errorsendingreceipt'] = 'Ne povis sendi konfirmon';
 $messages['nodeletelastidentity'] = 'Vi ne povas forigi ĉi tiun identon, ĉar ĝi estas la lasta';
 $messages['forbiddencharacter'] = 'Dosierujo-nomo enhavas malpermesitan karaktron';
-?>

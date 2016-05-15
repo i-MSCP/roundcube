@@ -1,9 +1,9 @@
 <?php
 
-/*
+/**
  +-------------------------------------------------------------------------+
  | Roundcube Webmail setup tool                                            |
- | Version 1.1.5                                                           |
+ | Version 1.2-git                                                         |
  |                                                                         |
  | Copyright (C) 2009-2015, The Roundcube Dev Team                         |
  |                                                                         |
@@ -66,7 +66,13 @@ $RCI->load_config();
 
 if (isset($_GET['_getconfig'])) {
   $filename = 'config.inc.php';
-  if (!empty($_SESSION['config'])) {
+  if (!empty($_SESSION['config']) && $_GET['_getconfig'] == 2) {
+    $path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
+    @unlink($path);
+    file_put_contents($path, $_SESSION['config']);
+    exit;
+  }
+  else if (!empty($_SESSION['config'])) {
     header('Content-type: text/plain');
     header('Content-Disposition: attachment; filename="'.$filename.'"');
     echo $_SESSION['config'];
@@ -158,7 +164,7 @@ if ($RCI->configured && empty($_REQUEST['_step'])) {
 
   foreach (array('Check environment', 'Create config', 'Test config') as $i => $item) {
     $j = $i + 1;
-    $link = ($RCI->step >= $j || $RCI->configured) ? '<a href="./index.php?_step='.$j.'">' . Q($item) . '</a>' : Q($item);
+    $link = ($RCI->step >= $j || $RCI->configured) ? '<a href="./index.php?_step='.$j.'">' . rcube::Q($item) . '</a>' : rcube::Q($item);
     printf('<li class="step%d%s">%s</li>', $j+1, $RCI->step > $j ? ' passed' : ($RCI->step == $j ? ' current' : ''), $link);
   }
 ?>

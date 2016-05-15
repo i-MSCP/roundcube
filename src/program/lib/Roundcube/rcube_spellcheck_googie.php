@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  +-----------------------------------------------------------------------+
  | This file is part of the Roundcube Webmail client                     |
  |                                                                       |
@@ -87,7 +87,7 @@ class rcube_spellcheck_googie extends rcube_spellcheck_engine
         if ($fp = fsockopen($host, $port, $errno, $errstr, 30)) {
             $out = "POST $path HTTP/1.0\r\n";
             $out .= "Host: " . str_replace('ssl://', '', $host) . "\r\n";
-            $out .= "User-Agent: Roundcube Webmail/" . RCMAIL_VERSION . " (Googiespell Wrapper)\r\n";
+            $out .= "User-Agent: Roundcube Webmail/" . RCUBE_VERSION . " (Googiespell Wrapper)\r\n";
             $out .= "Content-Length: " . strlen($gtext) . "\r\n";
             $out .= "Content-Type: text/xml\r\n";
             $out .= "Connection: Close\r\n\r\n";
@@ -175,6 +175,4 @@ class rcube_spellcheck_googie extends rcube_spellcheck_engine
 
         return $result;
     }
-
 }
-

@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  +-----------------------------------------------------------------------+
  | program/steps/mail/get.inc                                            |
  |                                                                       |
@@ -37,12 +37,11 @@ if (!empty($_GET['_preload'])) {
 
 ob_end_clean();
 
-
 // similar code as in program/steps/mail/show.inc
 if (!empty($_GET['_uid'])) {
     $uid = rcube_utils::get_input_value('_uid', rcube_utils::INPUT_GET);
     $RCMAIL->config->set('prefer_html', true);
-    $MESSAGE = new rcube_message($uid);
+    $MESSAGE = new rcube_message($uid, null, intval($_GET['_safe']));
 }
 
 // check connection status
@@ -113,7 +112,6 @@ else if ($_GET['_thumb']) {
 
     exit;
 }
-
 else if (strlen($part_id)) {
     if ($part = $MESSAGE->mime_parts[$part_id]) {
         $mimetype = rcmail_fix_mimetype($part->mimetype);
@@ -243,7 +241,7 @@ else if (strlen($part_id)) {
         list($ctype_primary, $ctype_secondary) = explode('/', $mimetype);
 
         if (!$plugin['download'] && $ctype_primary == 'text') {
-            header("Content-Type: text/$ctype_secondary; charset=" . ($part->charset ? $part->charset : RCUBE_CHARSET));
+            header("Content-Type: text/$ctype_secondary; charset=" . ($part->charset ?: RCUBE_CHARSET));
         }
         else {
             header("Content-Type: $mimetype");

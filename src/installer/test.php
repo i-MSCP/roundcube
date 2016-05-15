@@ -246,7 +246,7 @@ else {
 <h3>Test SMTP config</h3>
 
 <p>
-Server: <?php echo rcube_parse_host($RCI->getprop('smtp_server', 'PHP mail()')); ?><br />
+Server: <?php echo rcube_utils::parse_host($RCI->getprop('smtp_server', 'PHP mail()')); ?><br />
 Port: <?php echo $RCI->getprop('smtp_port'); ?><br />
 
 <?php
@@ -310,7 +310,7 @@ if (isset($_POST['sendmail'])) {
       $send_headers = $mail_object->headers($headers);
 
       $SMTP = new rcube_smtp();
-      $SMTP->connect(rcube_parse_host($RCI->getprop('smtp_server')),
+      $SMTP->connect(rcube_utils::parse_host($RCI->getprop('smtp_server')),
         $RCI->getprop('smtp_port'), $CONFIG['smtp_user'], $CONFIG['smtp_pass']);
 
       $status = $SMTP->send_mail($headers['From'], $headers['To'],
@@ -325,7 +325,7 @@ if (isset($_POST['sendmail'])) {
         $status = mail($headers['To'], $headers['Subject'], $body, $header_str);
       else
         $status = mail($headers['To'], $headers['Subject'], $body, $header_str, '-f'.$headers['From']);
-      
+
       if (!$status)
         $smtp_response[] = 'Mail delivery with mail() failed. Check your error logs for details';
     }
@@ -340,7 +340,7 @@ if (isset($_POST['sendmail'])) {
   else {
     $RCI->fail('SMTP send', 'Invalid sender or recipient');
   }
-  
+
   echo '</p>';
 }
 
@@ -405,7 +405,7 @@ $pass_field = new html_passwordfield(array('name' => '_pass', 'id' => 'imappass'
 
 if (isset($_POST['imaptest']) && !empty($_POST['_host']) && !empty($_POST['_user'])) {
 
-  echo '<p>Connecting to ' . Q($_POST['_host']) . '...<br />';
+  echo '<p>Connecting to ' . rcube::Q($_POST['_host']) . '...<br />';
 
   $imap_host = trim($_POST['_host']);
   $imap_port = $RCI->getprop('default_port');

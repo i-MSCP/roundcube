@@ -74,4 +74,3 @@ $messages['sourceisreadonly'] = 'Lenn hepken eo an tarzh chomlec\'h se';
 $messages['errorsavingcontact'] = 'Ne c\'haller ket gwarediñ chomlec\'h darempred';
 $messages['movingcontact'] = 'O fiñval an darempred(où)';
 $messages['contactdelerror'] = 'N\'eus ket bet gellet dilemel an darempred(où)';
-?>
