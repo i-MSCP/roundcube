@@ -1,7 +1,7 @@
 {
 	"name":"imscp/roundcube",
 	"description":"iMSCP tools - Roundcube Webmail",
-	"version":"1.2-rc",
+	"version":"1.2.x",
 	"authors":[
 	{
 		"name":"Roundcube Team",
