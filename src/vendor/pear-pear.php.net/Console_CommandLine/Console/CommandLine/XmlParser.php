@@ -100,8 +100,8 @@ class Console_CommandLine_XmlParser
      */
     public static function validate($doc)
     {
-        if (is_dir('/www/roundcube/releases/roundcubemail-1.2-rc/vendor/pear-pear.php.net/Console_CommandLine/data' . DIRECTORY_SEPARATOR . 'Console_CommandLine')) {
-            $rngfile = '/www/roundcube/releases/roundcubemail-1.2-rc/vendor/pear-pear.php.net/Console_CommandLine/data' . DIRECTORY_SEPARATOR
+        if (is_dir(__DIR__ . '/../../data' . DIRECTORY_SEPARATOR . 'Console_CommandLine')) {
+            $rngfile = __DIR__ . '/../../data' . DIRECTORY_SEPARATOR
                 . 'Console_CommandLine' . DIRECTORY_SEPARATOR . 'data'
                 . DIRECTORY_SEPARATOR . 'xmlschema.rng';
         } else {

@@ -23,8 +23,8 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>
  *
  * @category  Encryption
  * @package   Crypt_GPG
@@ -315,7 +315,7 @@ class Crypt_GPG_DecryptStatusHandler
             }
             if (count($missingPassphrases) > 0) {
                 $message = ' No passphrase provided for keys: "' .
-                    implode('", "', $badPassphrases) . '".';
+                    implode('", "', $missingPassphrases) . '".';
             }
 
             throw new Crypt_GPG_BadPassphraseException(

@@ -22,8 +22,8 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>
  *
  * @category  Encryption
  * @package   Crypt_GPG
@@ -241,7 +241,7 @@ class Crypt_GPG_KeyGenerator extends Crypt_GPGAbstract
      *                                       binary location using a list of
      *                                       know default locations for the
      *                                       current operating system.
-     * - <kbd>boolean debug</kbd>          - whether or not to use debug mode.
+     * - <kbd>mixed debug</kbd>            - whether or not to use debug mode.
      *                                       When debug mode is on, all
      *                                       communication to and from the GPG
      *                                       subprocess is logged. This can be

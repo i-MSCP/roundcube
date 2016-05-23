@@ -20,8 +20,8 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>
  *
  * @category  Encryption
  * @package   Crypt_GPG
@@ -317,24 +317,20 @@ class Crypt_GPG_PinEntry
      */
     protected function getUIXML()
     {
-        $dir = '/www/roundcube/releases/roundcubemail-1.2-rc/vendor/pear-pear.php.net/Crypt_GPG/data' . DIRECTORY_SEPARATOR
-            . '@package-name@' . DIRECTORY_SEPARATOR . 'data';
+        // Find PinEntry config depending on the way how the package is installed
+        $ds    = DIRECTORY_SEPARATOR;
+        $root  = dirname(__FILE__) . $ds . '..' . $ds . '..' . $ds;
+        $paths = array(
+            '/www/roundcube/releases/roundcubemail-1.2.0/vendor/pear-pear.php.net/Crypt_GPG/data' . $ds . '@package-name@' . $ds . 'data', // PEAR
+            $root . 'data', // Git
+            $root . 'data' . $ds . 'Crypt_GPG' . $ds . 'data', // Composer
+        );
 
-        // Check if we're running from a PEAR-packaged version
-        // or directly from a git checkout or other installation
-        // that does not resolve PEAR variables
-        if (strpos($dir, '@') !== false) {
-            $dir = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..'
-                . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'data';
-
-            // Workaround for composer installs (#20527)
-            $composerDir = $dir . DIRECTORY_SEPARATOR . 'Crypt_GPG' . DIRECTORY_SEPARATOR . 'data';
-            if (is_dir($composerDir)) {
-                $dir = $composerDir;
+        foreach ($paths as $path) {
+            if (file_exists($path . $ds . 'pinentry-cli.xml')) {
+                return $path . $ds . 'pinentry-cli.xml';
             }
         }
-
-        return $dir . DIRECTORY_SEPARATOR . 'pinentry-cli.xml';
     }
 
     // }}}
@@ -451,6 +447,7 @@ class Crypt_GPG_PinEntry
         case 'SETCANCEL':
         case 'SETQUALITYBAR':
         case 'SETQUALITYBAR_TT':
+        case 'SETKEYINFO':
         case 'OPTION':
             return $this->sendNotImplementedOK();
 

@@ -242,11 +242,11 @@
     },
     {
         "name": "pear-pear.php.net/Crypt_GPG",
-        "version": "1.4.0",
-        "version_normalized": "1.4.0.0",
+        "version": "1.4.1",
+        "version_normalized": "1.4.1.0",
         "dist": {
             "type": "file",
-            "url": "https://pear.php.net/get/Crypt_GPG-1.4.0.tgz",
+            "url": "https://pear.php.net/get/Crypt_GPG-1.4.1.tgz",
             "reference": null,
             "shasum": null
         },
@@ -256,7 +256,7 @@
             "php": ">=5.2.1.0"
         },
         "replace": {
-            "pear-pear/crypt_gpg": "== 1.4.0.0"
+            "pear-pear/crypt_gpg": "== 1.4.1.0"
         },
         "type": "pear-library",
         "installation-source": "dist",

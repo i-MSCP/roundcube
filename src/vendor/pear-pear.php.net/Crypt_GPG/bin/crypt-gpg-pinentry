@@ -4,25 +4,24 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 // Check if we're running directly from git repo or if we're running
-// from a PEAR packaged version.
-$path = '/www/roundcube/releases/roundcubemail-1.2-rc/vendor/pear-pear.php.net/Crypt_GPG';
-if ($path[0] === '@') {
-    // Git repo needs to set the include path as the pinentry program is not
-    // invoked in the current directory.
-    $path = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..';
-} else {
-    // PEAR packaged version needs to set include path in case it is running
-    // in a local PEAR tree that's not in the system PHP include path.
-}
+// from a PEAR or Composer packaged version.
+$ds    = DIRECTORY_SEPARATOR;
+$root  = dirname(__FILE__) . $ds . '..' ;
+$paths = array(
+    '/www/roundcube/releases/roundcubemail-1.2.0/vendor/pear-pear.php.net/Crypt_GPG', // PEAR or Composer
+    $root, // Git (or Composer with wrong /www/roundcube/releases/roundcubemail-1.2.0/vendor/pear-pear.php.net/Crypt_GPG)
+    $root . $ds . '..' . $ds . 'Console_CommandLine', // Composer
+    $root . $ds . '..' . $ds . 'console_commandline', // Composer
+);
 
-// Workaround for composer installs (#19914)
-$composerDir = $path . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Console_CommandLine';
-if (is_dir($composerDir)) {
-    $path .= PATH_SEPARATOR . $composerDir;
+foreach ($paths as $idx => $path) {
+    if (!is_dir($path)) {
+        unset($paths[$idx]);
+    }
 }
 
 // We depend on Console_CommandLine, so we append also the default include path
-set_include_path($path . PATH_SEPARATOR . get_include_path());
+set_include_path(implode(PATH_SEPARATOR, $paths) . PATH_SEPARATOR . get_include_path());
 
 require_once 'Crypt/GPG/PinEntry.php';
 
