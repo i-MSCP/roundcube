@@ -34,7 +34,7 @@
                 "Roundcube\\Composer": "src/"
             }
         },
-        "notification-url": "https://plugins.roundcube.net/downloads/%package%",
+        "notification-url": "https://plugins.roundcube.net/downloads/",
         "license": [
             "GPL-3.0+"
         ],
@@ -145,6 +145,72 @@
         "description": "Mail_Mime provides classes to deal with the creation and manipulation of MIME messages.\nIt allows people to create e-mail messages consisting of:\n* Text Parts\n* HTML Parts\n* Inline HTML Images\n* Attachments\n* Attached messages\n\nIt supports big messages, base64 and quoted-printable encodings and\nnon-ASCII characters in filenames, subjects, recipients, etc. encoded\nusing RFC2047 and/or RFC2231."
     },
     {
+        "name": "pear-pear.php.net/Console_CommandLine",
+        "version": "1.2.2",
+        "version_normalized": "1.2.2.0",
+        "dist": {
+            "type": "file",
+            "url": "https://pear.php.net/get/Console_CommandLine-1.2.2.tgz",
+            "reference": null,
+            "shasum": null
+        },
+        "require": {
+            "ext-dom": "*",
+            "ext-xml": "*",
+            "php": ">=5.3.0.0"
+        },
+        "replace": {
+            "pear-pear/console_commandline": "== 1.2.2.0"
+        },
+        "type": "pear-library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                ""
+            ]
+        },
+        "include-path": [
+            "/"
+        ],
+        "license": [
+            "MIT"
+        ],
+        "description": "Console_CommandLine is a full featured package for managing command-line \noptions and arguments highly inspired from python optparse module, it allows \nthe developer to easily build complex command line interfaces.\n\nMain features:\n  * handles sub commands (ie. $ myscript.php -q subcommand -f file),\n  * can be completely built from an xml definition file,\n  * generate --help and --version options automatically,\n  * can be completely customized,\n  * builtin support for i18n,\n  * and much more..."
+    },
+    {
+        "name": "pear-pear.php.net/Crypt_GPG",
+        "version": "1.4.2",
+        "version_normalized": "1.4.2.0",
+        "dist": {
+            "type": "file",
+            "url": "https://pear.php.net/get/Crypt_GPG-1.4.2.tgz",
+            "reference": null,
+            "shasum": null
+        },
+        "require": {
+            "ext-mbstring": "*",
+            "pear-pear.php.net/console_commandline": ">=1.1.10.0",
+            "php": ">=5.2.1.0"
+        },
+        "replace": {
+            "pear-pear/crypt_gpg": "== 1.4.2.0"
+        },
+        "type": "pear-library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                ""
+            ]
+        },
+        "include-path": [
+            "/"
+        ],
+        "license": [
+            "LGPL"
+        ],
+        "description": "This package provides an object oriented interface to GNU Privacy Guard (GnuPG). It requires the GnuPG executable to be on the system.\n\nThough GnuPG can support symmetric-key cryptography, this package is intended only to facilitate public-key cryptography.\n\nThis package requires PHP version 5.2.1 or greater."
+    },
+    {
         "name": "pear-pear.php.net/Net_Socket",
         "version": "1.0.14",
         "version_normalized": "1.0.14.0",
@@ -177,11 +243,11 @@
     },
     {
         "name": "pear-pear.php.net/Net_SMTP",
-        "version": "1.7.1",
-        "version_normalized": "1.7.1.0",
+        "version": "1.7.2",
+        "version_normalized": "1.7.2.0",
         "dist": {
             "type": "file",
-            "url": "https://pear.php.net/get/Net_SMTP-1.7.1.tgz",
+            "url": "https://pear.php.net/get/Net_SMTP-1.7.2.tgz",
             "reference": null,
             "shasum": null
         },
@@ -190,7 +256,7 @@
             "php": ">=5.4.0.0"
         },
         "replace": {
-            "pear-pear/net_smtp": "== 1.7.1.0"
+            "pear-pear/net_smtp": "== 1.7.2.0"
         },
         "type": "pear-library",
         "installation-source": "dist",
@@ -206,72 +272,6 @@
             "PHP License"
         ],
         "description": "Provides an implementation of the SMTP protocol using PEAR's Net_Socket class."
-    },
-    {
-        "name": "pear-pear.php.net/Console_CommandLine",
-        "version": "1.2.1",
-        "version_normalized": "1.2.1.0",
-        "dist": {
-            "type": "file",
-            "url": "https://pear.php.net/get/Console_CommandLine-1.2.1.tgz",
-            "reference": null,
-            "shasum": null
-        },
-        "require": {
-            "ext-dom": "*",
-            "ext-xml": "*",
-            "php": ">=5.1.0.0"
-        },
-        "replace": {
-            "pear-pear/console_commandline": "== 1.2.1.0"
-        },
-        "type": "pear-library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                ""
-            ]
-        },
-        "include-path": [
-            "/"
-        ],
-        "license": [
-            "MIT"
-        ],
-        "description": "Console_CommandLine is a full featured package for managing command-line \noptions and arguments highly inspired from python optparse module, it allows \nthe developer to easily build complex command line interfaces.\n\nMain features:\n  * handles sub commands (ie. $ myscript.php -q subcommand -f file),\n  * can be completely built from an xml definition file,\n  * generate --help and --version options automatically,\n  * can be completely customized,\n  * builtin support for i18n,\n  * and much more..."
-    },
-    {
-        "name": "pear-pear.php.net/Crypt_GPG",
-        "version": "1.4.1",
-        "version_normalized": "1.4.1.0",
-        "dist": {
-            "type": "file",
-            "url": "https://pear.php.net/get/Crypt_GPG-1.4.1.tgz",
-            "reference": null,
-            "shasum": null
-        },
-        "require": {
-            "ext-mbstring": "*",
-            "pear-pear.php.net/console_commandline": ">=1.1.10.0",
-            "php": ">=5.2.1.0"
-        },
-        "replace": {
-            "pear-pear/crypt_gpg": "== 1.4.1.0"
-        },
-        "type": "pear-library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                ""
-            ]
-        },
-        "include-path": [
-            "/"
-        ],
-        "license": [
-            "LGPL"
-        ],
-        "description": "This package provides an object oriented interface to GNU Privacy Guard (GnuPG). It requires the GnuPG executable to be on the system.\n\nThough GnuPG can support symmetric-key cryptography, this package is intended only to facilitate public-key cryptography.\n\nThis package requires PHP version 5.2.1 or greater."
     },
     {
         "name": "pear-pear.php.net/Net_LDAP2",
@@ -462,17 +462,17 @@
     },
     {
         "name": "pear/pear-core-minimal",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "v1.10.1",
+        "version_normalized": "1.10.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/pear/pear-core-minimal.git",
-            "reference": "fea2094bc4671d33c758870b53d538ce79c292a0"
+            "reference": "cae0f1ce0cb5bddb611b0a652d322905a65a5896"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/pear/pear-core-minimal/zipball/fea2094bc4671d33c758870b53d538ce79c292a0",
-            "reference": "fea2094bc4671d33c758870b53d538ce79c292a0",
+            "url": "https://api.github.com/repos/pear/pear-core-minimal/zipball/cae0f1ce0cb5bddb611b0a652d322905a65a5896",
+            "reference": "cae0f1ce0cb5bddb611b0a652d322905a65a5896",
             "shasum": ""
         },
         "require": {
@@ -482,7 +482,7 @@
         "replace": {
             "rsky/pear-core-min": "self.version"
         },
-        "time": "2015-10-17 14:12:29",
+        "time": "2015-10-17 11:41:19",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

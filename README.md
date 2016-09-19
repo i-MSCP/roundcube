@@ -1,6 +1,6 @@
-# i-MSCP Roundcube Package 
+# i-MSCP Roundcube Package
 
 Repository which provides the i-MSCP Roundcube composer package. This package is automatically fetched and installed
 by the i-MSCP installer when needed.
 
-Upstream release: 1.2.x Serie
+Roundcube Package Version: 1.2.1

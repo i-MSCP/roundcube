@@ -388,14 +388,19 @@ if ($isHtml) {
     $plainTextPart = rcube_mime::wordwrap($plainTextPart, $LINE_LENGTH, "\r\n", false, $message_charset);
     $plainTextPart = wordwrap($plainTextPart, 998, "\r\n", true);
 
-    // make sure all line endings are CRLF (#1486712)
-    $plainTextPart = preg_replace('/\r?\n/', "\r\n", $plainTextPart);
+    // There's no sense to use multipart/alternative if the text/plain
+    // part would be blank. Completely blank text/plain part may confuse
+    // some mail clients (#5283)
+    if (strlen(trim($plainTextPart)) > 0) {
+        // make sure all line endings are CRLF (#1486712)
+        $plainTextPart = preg_replace('/\r?\n/', "\r\n", $plainTextPart);
 
-    $plugin = $RCMAIL->plugins->exec_hook('message_outgoing_body',
-        array('body' => $plainTextPart, 'type' => 'alternative', 'message' => $MAIL_MIME));
+        $plugin = $RCMAIL->plugins->exec_hook('message_outgoing_body',
+            array('body' => $plainTextPart, 'type' => 'alternative', 'message' => $MAIL_MIME));
 
-    // add a plain text version of the e-mail as an alternative part.
-    $MAIL_MIME->setTXTBody($plugin['body']);
+        // add a plain text version of the e-mail as an alternative part.
+        $MAIL_MIME->setTXTBody($plugin['body']);
+    }
 
     // Extract image Data URIs into message attachments (#1488502)
     rcmail_extract_inline_images($MAIL_MIME, $from);
@@ -535,10 +540,16 @@ if (!$savedraft && !$saveonly) {
             unlink($mailbody_file);
         }
 
-        if ($smtp_error)
-            $OUTPUT->show_message($smtp_error['label'], 'error', $smtp_error['vars']); 
-        else
-            $OUTPUT->show_message('sendingfailed', 'error'); 
+        if ($smtp_error && is_string($smtp_error)) {
+            $OUTPUT->show_message($smtp_error, 'error');
+        }
+        else if ($smtp_error && !empty($smtp_error['label'])) {
+            $OUTPUT->show_message($smtp_error['label'], 'error', $smtp_error['vars']);
+        }
+        else {
+            $OUTPUT->show_message('sendingfailed', 'error');
+        }
+
         $OUTPUT->send('iframe');
     }
 

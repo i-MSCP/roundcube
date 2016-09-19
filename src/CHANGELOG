@@ -1,6 +1,37 @@
 CHANGELOG Roundcube Webmail
 ===========================
 
+RELEASE 1.2.1
+-------------
+- Update TinyMCE to version 4.3.13 (#5309)
+- Fix bug where errors could have been not logged when per_user_logging=true
+- Fix bug where message list columns could be in wrong order after column drag-n-drop and list sorting
+- Fix so minified publickey.js (with cache-buster) is used when available (#5254)
+- Fix (replace) application/x-tar file extension test as it might not exist in nginx config (#5253)
+- Fix PHP warning when password_hosts is set, but is not an array (#5260)
+- Fix redundant keep-alive requests when session_lifetime is greater than ~20000 (#5273)
+- Fix so subfolders of INBOX can be set as Archive (#5274)
+- Fix bug where multi-folder search could choose a wrong folder in "this and subfolders" scope (#5282)
+- Fix bug where multi-folder search didn't work for unsubscribed INBOX (#5259)
+- Fix bug where "no body" alert could be displayed when sending mailvelope email
+- Enigma: Fix keys import from inside of an encrypted message (#5285)
+- Enigma: Fix malformed signed messages with force_7bit=true (#5292)
+- Enigma: Add possibility to configure gpg binary location (enigma_pgp_binary)
+- Enigma: Add possibility to export private keys (#5321)
+- Fix searching by email address in contacts with multiple addresses (#5291)
+- Fix handling of --delete argument in moduserprefs.sh script (#5296)
+- Workaround PHP issue by calling closelog() on script shutdown when using log_driver=syslog (#5289)
+- Fix so upgrade script makes sure program/lib directory does not contain old libraries (#5287)
+- Fix subscription checkbox state on error in folder subscribe/unsubscribe action (#5243)
+- Fix bug where microsecond format in logged date didn't work in some cases
+- Fix conflict in new_user_dialog and password_force_new_user settings (#5275)
+- Don't create multipart/alternative messages with empty text/plain part (#5283)
+- Use contact_search_name format in popup on results in compose contacts search
+- Fix handling of 'mailto' and 'error' arguments in message_before_send hook (#5347)
+- Fix missing localization of HTML editor when assets_dir != INSTALL_PATH
+- Fix handling of blockquote tags with mixed case on html2text conversion (#5363)
+- Fix javascript errors in IE on page with iframe that points to another domain
+
 RELEASE 1.2.0
 -------------
 - Enigma: Added enigma_debug option

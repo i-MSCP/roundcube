@@ -976,6 +976,16 @@ class rcube_utils
     public static function get_opt($aliases = array())
     {
         $args = array();
+        $bool = array();
+
+        // find boolean (no value) options
+        foreach ($aliases as $key => $alias) {
+            if ($pos = strpos($alias, ':')) {
+                $aliases[$key] = substr($alias, 0, $pos);
+                $bool[] = $key;
+                $bool[] = $aliases[$key];
+            }
+        }
 
         for ($i=1; $i < count($_SERVER['argv']); $i++) {
             $arg   = $_SERVER['argv'][$i];
@@ -985,9 +995,13 @@ class rcube_utils
             if ($arg[0] == '-') {
                 $key = preg_replace('/^-+/', '', $arg);
                 $sp  = strpos($arg, '=');
+
                 if ($sp > 0) {
                     $key   = substr($key, 0, $sp - 2);
                     $value = substr($arg, $sp+1);
+                }
+                else if (in_array($key, $bool)) {
+                    $value = true;
                 }
                 else if (strlen($_SERVER['argv'][$i+1]) && $_SERVER['argv'][$i+1][0] != '-') {
                     $value = $_SERVER['argv'][++$i];
@@ -1194,10 +1208,13 @@ class rcube_utils
             $format = 'd-M-Y H:i:s O';
         }
 
-        if (strpos($format, 'u') !== false
-            && ($date = date_create_from_format('U.u.e', microtime(true) . '.' . date_default_timezone_get()))
-        ) {
-            return $date->format($format);
+        if (strpos($format, 'u') !== false) {
+            $dt  = number_format(microtime(true), 6, '.', '');
+            $dt .=  '.' . date_default_timezone_get();
+
+            if ($date = date_create_from_format('U.u.e', $dt)) {
+                return $date->format($format);
+            }
         }
 
         return date($format);

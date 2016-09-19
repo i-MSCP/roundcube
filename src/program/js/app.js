@@ -612,16 +612,12 @@ function rcube_webmail()
     }
 
     // catch document (and iframe) mouse clicks
-    var body_mouseup = function(e){ return ref.doc_mouse_up(e); };
+    var body_mouseup = function(e) { return ref.doc_mouse_up(e); };
     $(document.body)
       .mouseup(body_mouseup)
-      .keydown(function(e){ return ref.doc_keypress(e); });
+      .keydown(function(e) { return ref.doc_keypress(e); });
 
-    $('iframe').on('load', function(e) {
-        try { $(this.contentDocument || this.contentWindow).on('mouseup', body_mouseup);  }
-        catch (e) {/* catch possible "Permission denied" error in IE */ }
-      })
-      .contents().on('mouseup', body_mouseup);
+    rcube_webmail.set_iframe_events({mouseup: body_mouseup});
 
     // trigger init event hook
     this.triggerEvent('init', { task:this.task, action:this.env.action });
@@ -3577,14 +3573,6 @@ function rcube_webmail()
 
       // list recipients with missing keys
       if (!isvalid && missing_keys.length) {
-        // load publickey.js
-        if (!$('script#publickeyjs').length) {
-          $('<script>')
-            .attr('id', 'publickeyjs')
-            .attr('src', ref.assets_path('program/js/publickey.js'))
-            .appendTo(document.body);
-        }
-
         // display dialog with missing keys
         ref.show_popup_dialog(
           ref.get_label('nopubkeyfor').replace('$email', missing_keys.join(', ')) +
@@ -4271,8 +4259,8 @@ function rcube_webmail()
       return false;
     }
 
-    // check for empty body
-    if (!this.editor.get_content() && !confirm(this.get_label('nobodywarning'))) {
+    // check for empty body (only possible if not mailvelope encrypted)
+    if (!this.mailvelope_editor && !this.editor.get_content() && !confirm(this.get_label('nobodywarning'))) {
       this.editor.focus();
       return false;
     }
@@ -6864,6 +6852,14 @@ function rcube_webmail()
       $('input[name="_subscribed[]"]:first', row).prop('disabled', true);
   };
 
+  // resets state of subscription checkbox (e.g. on error)
+  this.reset_subscription = function(folder, state)
+  {
+    var row = this.subscription_list.get_item(folder, true);
+    if (row)
+      $('input[name="_subscribed[]"]:first', row).prop('checked', state);
+  };
+
   this.folder_size = function(folder)
   {
     var lock = this.set_busy(true, 'loading');
@@ -8542,7 +8538,10 @@ function rcube_webmail()
     if (this._keepalive)
       clearInterval(this._keepalive);
 
-    this._keepalive = setInterval(function(){ ref.keep_alive(); }, this.env.session_lifetime * 0.5 * 1000);
+    // use Math to prevent from an integer overflow (#5273)
+    // maximum interval is 15 minutes, minimum is 30 seconds
+    var interval = Math.min(1800, this.env.session_lifetime) * 0.5 * 1000;
+    this._keepalive = setInterval(function() { ref.keep_alive(); }, interval < 30000 ? 30000 : interval);
   };
 
   // starts interval for refresh signal
@@ -8976,6 +8975,23 @@ rcube_webmail.subject_text = function(elem)
   var t = $(elem).clone();
   t.find('.skip-on-drag').remove();
   return t.text();
+};
+
+// set event handlers on all iframe elements (and their contents)
+rcube_webmail.set_iframe_events = function(events)
+{
+  $('iframe').each(function() {
+    var frame = $(this);
+    $.each(events, function(event_name, event_handler) {
+      frame.on('load', function(e) {
+        try { $(this).contents().on(event_name, event_handler); }
+        catch (e) {/* catch possible permission error in IE */ }
+      });
+
+      try { frame.contents().on(event_name, event_handler); }
+      catch (e) {/* catch possible permission error in IE */ }
+    });
+  });
 };
 
 rcube_webmail.prototype.get_cookie = getCookie;
