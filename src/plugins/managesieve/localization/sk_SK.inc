@@ -124,6 +124,7 @@ $labels['filtercreate'] = 'Vytvoriť filter';
 $labels['usedata'] = 'Použiť tieto údaje vo filtri:';
 $labels['nextstep'] = 'Ďalší krok';
 $labels['...'] = '...';
+$labels['string'] = 'Reťazec';
 $labels['currdate'] = 'Aktuálny dátum';
 $labels['datetest'] = 'Dátum';
 $labels['dateheader'] = 'záhlavie:';
@@ -233,5 +234,5 @@ $messages['invaliddateformat'] = 'Neplatný formát dátumu alebo časti dátumu
 $messages['saveerror'] = 'Údaje nemožno uložiť. Nastala chyba servera.';
 $messages['vacationsaved'] = 'Údaje o dovolenke boli úspešne uložené.';
 $messages['emptyvacationbody'] = 'Musíte zadať telo správy, zobrazovanej v čase neprítomnosti!';
-$messages['duplicate.conflict.err'] = 'Záhlavie a ani unikátny identifikátor nie sú povolené.';
+$messages['duplicate.conflict.err'] = 'Hlavička a aj unikátny identifikátor nie sú povolené.';
 ?>
