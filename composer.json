@@ -1,22 +1,22 @@
 {
-	"name":"imscp/roundcube",
-	"description":"iMSCP tools - Roundcube Webmail",
-	"version":"1.2.0",
-	"authors":[
-	{
-		"name":"Roundcube Team",
-		"email":"hello@roundcube.net",
-		"homepage":"http://roundcube.net"
-	}
-],
-	"license":"GPL-3.0+",
-	"keywords":[
-		"imscp",
-		"roundcube",
-		"webmail",
-		"tools"
-	],
-	"require":{
-		"php": ">=5.3.7"
-	}
+  "name": "imscp/roundcube",
+  "description": "iMSCP tools - Roundcube Webmail",
+  "version": "1.2.3",
+  "authors": [
+    {
+      "name": "Roundcube Team",
+      "email": "hello@roundcube.net",
+      "homepage": "http://roundcube.net"
+    }
+  ],
+  "license": "GPL-3.0+",
+  "keywords": [
+    "imscp",
+    "roundcube",
+    "webmail",
+    "tools"
+  ],
+  "require": {
+    "php": ">=5.3.7"
+  }
 }

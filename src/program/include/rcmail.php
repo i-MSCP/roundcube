@@ -1465,7 +1465,7 @@ class rcmail extends rcube
         $prefix = '';
         if (!$path) {
             $n_folder = $folder;
-            $folder = $this->storage->mod_folder($folder);
+            $folder   = $this->storage->mod_folder($folder);
 
             if ($n_folder != $folder) {
                 $prefix = substr($n_folder, 0, -strlen($folder));
@@ -1499,10 +1499,11 @@ class rcmail extends rcube
 
         if (!isset($arrFolders[$currentFolder])) {
             $arrFolders[$currentFolder] = array(
-                'id' => $path,
-                'name' => rcube_charset::convert($currentFolder, 'UTF7-IMAP'),
+                'id'      => $path,
+                'name'    => rcube_charset::convert($currentFolder, 'UTF7-IMAP'),
                 'virtual' => $virtual,
-                'folders' => array());
+                'folders' => array()
+            );
         }
         else {
             $arrFolders[$currentFolder]['virtual'] = $virtual;
@@ -1917,13 +1918,14 @@ class rcmail extends rcube
         }
 
         $lang_codes = array($_SESSION['language']);
+        $assets_dir = $this->config->get('assets_dir') ?: INSTALL_PATH;
 
         if ($pos = strpos($_SESSION['language'], '_')) {
             $lang_codes[] = substr($_SESSION['language'], 0, $pos);
         }
 
         foreach ($lang_codes as $code) {
-            if (file_exists(INSTALL_PATH . 'program/js/tinymce/langs/'.$code.'.js')) {
+            if (file_exists("$assets_dir/program/js/tinymce/langs/$code.js")) {
                 $lang = $code;
                 break;
             }
@@ -2053,13 +2055,7 @@ class rcmail extends rcube
         }
 
         // find max filesize value
-        $max_filesize = parse_bytes(ini_get('upload_max_filesize'));
-        $max_postsize = parse_bytes(ini_get('post_max_size'));
-
-        if ($max_postsize && $max_postsize < $max_filesize) {
-            $max_filesize = $max_postsize;
-        }
-
+        $max_filesize = rcube_utils::max_upload_size();
         if ($max_size && $max_size < $max_filesize) {
             $max_filesize = $max_size;
         }
@@ -2246,11 +2242,20 @@ class rcmail extends rcube
         }
         else {
             $size = $part->size;
+
+            if ($size === 0) {
+                $part->exact_size = true;
+            }
+
             if ($part->encoding == 'base64') {
                 $size = $size / 1.33;
             }
 
-            $size = '~' . $this->show_bytes($size);
+            $size = $this->show_bytes($size);
+        }
+
+        if (!$part->exact_size) {
+            $size = '~' . $size;
         }
 
         return $size;

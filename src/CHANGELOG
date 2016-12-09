@@ -1,6 +1,80 @@
 CHANGELOG Roundcube Webmail
 ===========================
 
+RELEASE 1.2.3
+-------------
+- Searching in both contacts and groups when LDAP addressbook with group_filters option is used
+- Fix vulnerability in handling of mail()'s 5th argument
+- Fix To: header encoding in mail sent with mail() method (#5475)
+- Fix flickering of header topline in min-mode (#5426)
+- Fix bug where folders list would scroll to top when clicking on subscription checkbox (#5447)
+- Fix decoding of GB2312/GBK text when iconv is not installed (#5448)
+- Fix regression where creation of default folders wasn't functioning without prefix (#5460)
+- Enigma: Fix bug where last records on keys list were hidden (#5461)
+- Enigma: Fix key search with keyword containing non-ascii characters (#5459)
+- Fix bug where deleting folders with subfolders could fail in some cases (#5466)
+- Fix bug where IMAP password could be exposed via error message (#5472)
+- Fix bug where it wasn't possible to store more that 2MB objects in memcache/apc,
+  Added memcache_max_allowed_packet and apc_max_allowed_packet settings (#5452)
+- Fix "Illegal string offset" warning in rcube::log_bug() on PHP 7.1 (#5508)
+- Fix storing "empty" values in rcube_cache/rcube_cache_shared (#5519)
+- Fix missing content check when image resize fails on attachment thumbnail generation (#5485)
+- Fix displaying attached images with wrong Content-Type specified (#5527)
+
+RELEASE 1.2.2
+-------------
+- Enigma: Add possibility to configure gpg-agent binary location (enigma_pgp_agent)
+- Enigma: Fix signature verification with some IMAP servers, e.g. Gmail, DBMail (#5371)
+- Enigma: Make recipient key searches case-insensitive (#5434)
+- Fix regression in resizing JPEG images with Imagick (#5376)
+- Managesieve: Fix parsing of vacation date-time with non-default date_format (#5372)
+- Use SymLinksIfOwnerMatch in .htaccess instead of FollowSymLinks disabled on some hosts for security reasons (#5370)
+- Wash position:fixed style in HTML mail for better security (#5264)
+- Fix bug where memcache_debug didn't work for session operations
+- Fix bug where Message-ID domain part was tied to username instead of current identity (#5385)
+- Fix bug where blocked.gif couldn't be attached to reply/forward with insecure content
+- Fix E_DEPRECATED warning when using Auth_SASL::factory() (#5401)
+- Fix bug where names of downloaded files could be malformed when derived from the message subject (#5404)
+- Fix so "All" messages selection is resetted on search reset (#5413)
+- Fix bug where folder creation could fail if personal namespace contained more than one entry (#5403)
+- Fix error causing empty INBOX listing in Firefox when using an URL with user:password specified (#5400)
+- Fix PHP warning when handling shared namespace with empty prefix (#5420)
+- Fix so folders list is scrolled to the selected folder on page load (#5424)
+- Fix so when moving to Trash we make sure the folder exists (#5192)
+- Fix displaying size of attachments with zero size
+- Fix so "Action disabled" error uses more appropriate 404 code (#5440)
+
+RELEASE 1.2.1
+-------------
+- Update TinyMCE to version 4.3.13 (#5309)
+- Fix bug where errors could have been not logged when per_user_logging=true
+- Fix bug where message list columns could be in wrong order after column drag-n-drop and list sorting
+- Fix so minified publickey.js (with cache-buster) is used when available (#5254)
+- Fix (replace) application/x-tar file extension test as it might not exist in nginx config (#5253)
+- Fix PHP warning when password_hosts is set, but is not an array (#5260)
+- Fix redundant keep-alive requests when session_lifetime is greater than ~20000 (#5273)
+- Fix so subfolders of INBOX can be set as Archive (#5274)
+- Fix bug where multi-folder search could choose a wrong folder in "this and subfolders" scope (#5282)
+- Fix bug where multi-folder search didn't work for unsubscribed INBOX (#5259)
+- Fix bug where "no body" alert could be displayed when sending mailvelope email
+- Enigma: Fix keys import from inside of an encrypted message (#5285)
+- Enigma: Fix malformed signed messages with force_7bit=true (#5292)
+- Enigma: Add possibility to configure gpg binary location (enigma_pgp_binary)
+- Enigma: Add possibility to export private keys (#5321)
+- Fix searching by email address in contacts with multiple addresses (#5291)
+- Fix handling of --delete argument in moduserprefs.sh script (#5296)
+- Workaround PHP issue by calling closelog() on script shutdown when using log_driver=syslog (#5289)
+- Fix so upgrade script makes sure program/lib directory does not contain old libraries (#5287)
+- Fix subscription checkbox state on error in folder subscribe/unsubscribe action (#5243)
+- Fix bug where microsecond format in logged date didn't work in some cases
+- Fix conflict in new_user_dialog and password_force_new_user settings (#5275)
+- Don't create multipart/alternative messages with empty text/plain part (#5283)
+- Use contact_search_name format in popup on results in compose contacts search
+- Fix handling of 'mailto' and 'error' arguments in message_before_send hook (#5347)
+- Fix missing localization of HTML editor when assets_dir != INSTALL_PATH
+- Fix handling of blockquote tags with mixed case on html2text conversion (#5363)
+- Fix javascript errors in IE on page with iframe that points to another domain
+
 RELEASE 1.2.0
 -------------
 - Enigma: Added enigma_debug option

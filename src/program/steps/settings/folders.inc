@@ -50,8 +50,10 @@ if ($RCMAIL->action == 'subscribe') {
 
             $OUTPUT->show_message('foldersubscribed', 'confirmation');
         }
-        else
+        else {
             $RCMAIL->display_server_error('errorsaving');
+            $OUTPUT->command('reset_subscription', $mbox, false);
+        }
     }
 }
 // unsubscribe mailbox
@@ -60,10 +62,14 @@ else if ($RCMAIL->action == 'unsubscribe') {
 
     if (strlen($mbox)) {
         $result = $STORAGE->unsubscribe(array($mbox));
-        if ($result)
+
+        if ($result) {
             $OUTPUT->show_message('folderunsubscribed', 'confirmation');
-        else
+        }
+        else {
             $RCMAIL->display_server_error('errorsaving');
+            $OUTPUT->command('reset_subscription', $mbox, true);
+        }
     }
 }
 // delete an existing mailbox
@@ -271,7 +277,7 @@ function rcmail_subscription_form($attrib)
     foreach ($list_folders as $i => $folder) {
         $sub_key    = array_search($folder['id'], $a_subscribed);
         $subscribed = $sub_key !== false;
-        $protected  = $protect_default && isset($special_folders[$folder['id']]);
+        $protected  = $folder['id'] == 'INBOX' || ($protect_default && isset($special_folders[$folder['id']]));
         $noselect   = false;
         $classes    = array();
 
@@ -324,7 +330,7 @@ function rcmail_subscription_form($attrib)
             if (!$disabled) {
                 $tmp_ns = array_merge((array)$namespace['other'], (array)$namespace['shared']);
                 foreach ($tmp_ns as $item) {
-                    if (strpos($folder['id'], $item[0]) === 0) {
+                    if (strlen($item[0]) && strpos($folder['id'], $item[0]) === 0) {
                         $disabled = true;
                         break;
                     }

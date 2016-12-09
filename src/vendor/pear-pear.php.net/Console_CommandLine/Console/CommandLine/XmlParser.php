@@ -35,7 +35,7 @@ require_once 'Console/CommandLine.php';
  * @author    David JEAN LOUIS <izimobil@gmail.com>
  * @copyright 2007 David JEAN LOUIS
  * @license   http://opensource.org/licenses/mit-license.php MIT License
- * @version   Release: 1.2.1
+ * @version   Release: 1.2.2
  * @link      http://pear.php.net/package/Console_CommandLine
  * @since     Class available since release 0.1.0
  */
@@ -100,20 +100,26 @@ class Console_CommandLine_XmlParser
      */
     public static function validate($doc)
     {
-        if (is_dir(__DIR__ . '/../../data' . DIRECTORY_SEPARATOR . 'Console_CommandLine')) {
-            $rngfile = __DIR__ . '/../../data' . DIRECTORY_SEPARATOR
-                . 'Console_CommandLine' . DIRECTORY_SEPARATOR . 'data'
-                . DIRECTORY_SEPARATOR . 'xmlschema.rng';
-        } else {
-            $rngfile = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..'
-                . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'data'
-                . DIRECTORY_SEPARATOR . 'xmlschema.rng';
+        $pkgRoot  = __DIR__ . '/../../';
+        $paths = array(
+            // PEAR/Composer
+            '/www/roundcube/releases/roundcubemail-1.2.3/vendor/pear-pear.php.net/Console_CommandLine/data/Console_CommandLine/data/xmlschema.rng',
+            // Composer
+            $pkgRoot . 'data/Console_CommandLine/data/xmlschema.rng',
+            $pkgRoot . 'data/console_commandline/data/xmlschema.rng',
+            // Git
+            $pkgRoot . 'data/xmlschema.rng',
+            'xmlschema.rng',
+        );
+
+        foreach ($paths as $path) {
+            if (is_readable($path)) {
+                return $doc->relaxNGValidate($path);
+            }
         }
-        if (!is_readable($rngfile)) {
-            Console_CommandLine::triggerError('invalid_xml_file',
-                E_USER_ERROR, array('{$file}' => $rngfile));
-        }
-        return $doc->relaxNGValidate($rngfile);
+        Console_CommandLine::triggerError(
+            'invalid_xml_file',
+            E_USER_ERROR, array('{$file}' => $rngfile));
     }
 
     // }}}

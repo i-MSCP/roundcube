@@ -91,8 +91,9 @@ class Crypt_GPG_ProcessControl
     /**
      * Checks if the process is running
      *
-     * Uses <kbd>ps</kbd> on UNIX-like systems and <kbd>tasklist</kbd> on
-     * Windows.
+     * If the <kbd>posix</kbd> extension is available, <kbd>posix_getpgid()</kbd>
+     * is used. Otherwise <kbd>ps</kbd> is used on UNIX-like systems and
+     * <kbd>tasklist</kbd> on Windows.
      *
      * @return boolean true if the process is running, false if not.
      */
@@ -100,7 +101,9 @@ class Crypt_GPG_ProcessControl
     {
         $running = false;
 
-        if (PHP_OS === 'WINNT') {
+        if (function_exists('posix_getpgid')) {
+            $running = false !== posix_getpgid($this->pid);
+        } elseif (PHP_OS === 'WINNT') {
             $command = 'tasklist /fo csv /nh /fi '
                 . escapeshellarg('PID eq ' . $this->pid);
 

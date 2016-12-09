@@ -63,11 +63,6 @@ if (!$savedraft) {
 
 /****** compose message ********/
 
-if (empty($COMPOSE['param']['message-id'])) {
-    $COMPOSE['param']['message-id'] = $RCMAIL->gen_message_id();
-}
-$message_id = $COMPOSE['param']['message-id'];
-
 // set default charset
 $message_charset = isset($_POST['_charset']) ? $_POST['_charset'] : $OUTPUT->get_charset();
 
@@ -106,11 +101,14 @@ if (is_numeric($from)) {
     }
 }
 // ... if there is no identity record, this might be a custom from
-else if ($from_string = rcmail_email_input_format($from)) {
-    if (preg_match('/(\S+@\S+)/', $from_string, $m))
-        $from = trim($m[1], '<>');
-    else
-        $from = null;
+else if (($from_string = rcmail_email_input_format($from))
+    && preg_match('/(\S+@\S+)/', $from_string, $m)
+) {
+    $from = trim($m[1], '<>');
+}
+// ... otherwise it's empty or invalid
+else {
+    $from = null;
 }
 
 // check 'From' address (identity may be incomplete)
@@ -122,6 +120,11 @@ if (!$savedraft && !$saveonly && empty($from)) {
 if (!$from_string && $from) {
     $from_string = $from;
 }
+
+if (empty($COMPOSE['param']['message-id'])) {
+    $COMPOSE['param']['message-id'] = $RCMAIL->gen_message_id($from);
+}
+$message_id = $COMPOSE['param']['message-id'];
 
 // compose headers array
 $headers = array();
@@ -388,14 +391,19 @@ if ($isHtml) {
     $plainTextPart = rcube_mime::wordwrap($plainTextPart, $LINE_LENGTH, "\r\n", false, $message_charset);
     $plainTextPart = wordwrap($plainTextPart, 998, "\r\n", true);
 
-    // make sure all line endings are CRLF (#1486712)
-    $plainTextPart = preg_replace('/\r?\n/', "\r\n", $plainTextPart);
+    // There's no sense to use multipart/alternative if the text/plain
+    // part would be blank. Completely blank text/plain part may confuse
+    // some mail clients (#5283)
+    if (strlen(trim($plainTextPart)) > 0) {
+        // make sure all line endings are CRLF (#1486712)
+        $plainTextPart = preg_replace('/\r?\n/', "\r\n", $plainTextPart);
 
-    $plugin = $RCMAIL->plugins->exec_hook('message_outgoing_body',
-        array('body' => $plainTextPart, 'type' => 'alternative', 'message' => $MAIL_MIME));
+        $plugin = $RCMAIL->plugins->exec_hook('message_outgoing_body',
+            array('body' => $plainTextPart, 'type' => 'alternative', 'message' => $MAIL_MIME));
 
-    // add a plain text version of the e-mail as an alternative part.
-    $MAIL_MIME->setTXTBody($plugin['body']);
+        // add a plain text version of the e-mail as an alternative part.
+        $MAIL_MIME->setTXTBody($plugin['body']);
+    }
 
     // Extract image Data URIs into message attachments (#1488502)
     rcmail_extract_inline_images($MAIL_MIME, $from);
@@ -535,10 +543,16 @@ if (!$savedraft && !$saveonly) {
             unlink($mailbody_file);
         }
 
-        if ($smtp_error)
-            $OUTPUT->show_message($smtp_error['label'], 'error', $smtp_error['vars']); 
-        else
-            $OUTPUT->show_message('sendingfailed', 'error'); 
+        if ($smtp_error && is_string($smtp_error)) {
+            $OUTPUT->show_message($smtp_error, 'error');
+        }
+        else if ($smtp_error && !empty($smtp_error['label'])) {
+            $OUTPUT->show_message($smtp_error['label'], 'error', $smtp_error['vars']);
+        }
+        else {
+            $OUTPUT->show_message('sendingfailed', 'error');
+        }
+
         $OUTPUT->send('iframe');
     }
 

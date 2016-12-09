@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <command>
 	<description>Utility that emulates GnuPG 1.x passphrase handling over pipe-based IPC for GnuPG 2.x.</description>
-	<version>1.4.1</version>
+	<version>1.4.3</version>
 	<option name="log">
 		<short_name>-l</short_name>
 		<long_name>--log</long_name>

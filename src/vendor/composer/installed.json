@@ -1,17 +1,17 @@
 [
     {
         "name": "roundcube/plugin-installer",
-        "version": "0.1.7",
-        "version_normalized": "0.1.7.0",
+        "version": "0.1.8",
+        "version_normalized": "0.1.8.0",
         "source": {
             "type": "git",
             "url": "https://github.com/roundcube/plugin-installer.git",
-            "reference": "0.1.7"
+            "reference": "43f0938f2c4ce6885c5cb7c5c43d13e8fdc8b8a8"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/roundcube/plugin-installer/zipball/0.1.7",
-            "reference": "0.1.7",
+            "url": "https://api.github.com/repos/roundcube/plugin-installer/zipball/43f0938f2c4ce6885c5cb7c5c43d13e8fdc8b8a8",
+            "reference": "43f0938f2c4ce6885c5cb7c5c43d13e8fdc8b8a8",
             "shasum": ""
         },
         "require": {
@@ -20,7 +20,7 @@
         "require-dev": {
             "composer/composer": "*"
         },
-        "time": "2015-08-27 16:08:26",
+        "time": "2015-12-22 11:29:24",
         "bin": [
             "src/bin/rcubeinitdb.sh"
         ],
@@ -34,7 +34,7 @@
                 "Roundcube\\Composer": "src/"
             }
         },
-        "notification-url": "https://plugins.roundcube.net/downloads/%package%",
+        "notification-url": "https://plugins.roundcube.net/downloads/",
         "license": [
             "GPL-3.0+"
         ],
@@ -45,8 +45,7 @@
             },
             {
                 "name": "Thomas Bruederli",
-                "email": "thomas@roundcube.net",
-                "role": "Lead"
+                "email": "thomas@roundcube.net"
             }
         ],
         "description": "A composer-installer for Roundcube plugins."
@@ -177,11 +176,11 @@
     },
     {
         "name": "pear-pear.php.net/Net_SMTP",
-        "version": "1.7.1",
-        "version_normalized": "1.7.1.0",
+        "version": "1.7.2",
+        "version_normalized": "1.7.2.0",
         "dist": {
             "type": "file",
-            "url": "https://pear.php.net/get/Net_SMTP-1.7.1.tgz",
+            "url": "https://pear.php.net/get/Net_SMTP-1.7.2.tgz",
             "reference": null,
             "shasum": null
         },
@@ -190,7 +189,7 @@
             "php": ">=5.4.0.0"
         },
         "replace": {
-            "pear-pear/net_smtp": "== 1.7.1.0"
+            "pear-pear/net_smtp": "== 1.7.2.0"
         },
         "type": "pear-library",
         "installation-source": "dist",
@@ -209,21 +208,21 @@
     },
     {
         "name": "pear-pear.php.net/Console_CommandLine",
-        "version": "1.2.1",
-        "version_normalized": "1.2.1.0",
+        "version": "1.2.2",
+        "version_normalized": "1.2.2.0",
         "dist": {
             "type": "file",
-            "url": "https://pear.php.net/get/Console_CommandLine-1.2.1.tgz",
+            "url": "https://pear.php.net/get/Console_CommandLine-1.2.2.tgz",
             "reference": null,
             "shasum": null
         },
         "require": {
             "ext-dom": "*",
             "ext-xml": "*",
-            "php": ">=5.1.0.0"
+            "php": ">=5.3.0.0"
         },
         "replace": {
-            "pear-pear/console_commandline": "== 1.2.1.0"
+            "pear-pear/console_commandline": "== 1.2.2.0"
         },
         "type": "pear-library",
         "installation-source": "dist",
@@ -242,11 +241,11 @@
     },
     {
         "name": "pear-pear.php.net/Crypt_GPG",
-        "version": "1.4.1",
-        "version_normalized": "1.4.1.0",
+        "version": "1.4.3",
+        "version_normalized": "1.4.3.0",
         "dist": {
             "type": "file",
-            "url": "https://pear.php.net/get/Crypt_GPG-1.4.1.tgz",
+            "url": "https://pear.php.net/get/Crypt_GPG-1.4.3.tgz",
             "reference": null,
             "shasum": null
         },
@@ -256,7 +255,7 @@
             "php": ">=5.2.1.0"
         },
         "replace": {
-            "pear-pear/crypt_gpg": "== 1.4.1.0"
+            "pear-pear/crypt_gpg": "== 1.4.3.0"
         },
         "type": "pear-library",
         "installation-source": "dist",
@@ -462,17 +461,17 @@
     },
     {
         "name": "pear/pear-core-minimal",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "v1.10.1",
+        "version_normalized": "1.10.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/pear/pear-core-minimal.git",
-            "reference": "fea2094bc4671d33c758870b53d538ce79c292a0"
+            "reference": "cae0f1ce0cb5bddb611b0a652d322905a65a5896"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/pear/pear-core-minimal/zipball/fea2094bc4671d33c758870b53d538ce79c292a0",
-            "reference": "fea2094bc4671d33c758870b53d538ce79c292a0",
+            "url": "https://api.github.com/repos/pear/pear-core-minimal/zipball/cae0f1ce0cb5bddb611b0a652d322905a65a5896",
+            "reference": "cae0f1ce0cb5bddb611b0a652d322905a65a5896",
             "shasum": ""
         },
         "require": {
@@ -482,7 +481,7 @@
         "replace": {
             "rsky/pear-core-min": "self.version"
         },
-        "time": "2015-10-17 14:12:29",
+        "time": "2015-10-17 11:41:19",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -508,17 +507,17 @@
     },
     {
         "name": "roundcube/net_sieve",
-        "version": "1.5.2",
-        "version_normalized": "1.5.2.0",
+        "version": "1.5.3",
+        "version_normalized": "1.5.3.0",
         "source": {
             "type": "git",
             "url": "https://github.com/roundcube/Net_Sieve.git",
-            "reference": "e8fe05af8a2d1f2131250c24439b8107f0614513"
+            "reference": "114dcd753b00f7a81329ee771981222e7980e09c"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/roundcube/Net_Sieve/zipball/e8fe05af8a2d1f2131250c24439b8107f0614513",
-            "reference": "e8fe05af8a2d1f2131250c24439b8107f0614513",
+            "url": "https://api.github.com/repos/roundcube/Net_Sieve/zipball/114dcd753b00f7a81329ee771981222e7980e09c",
+            "reference": "114dcd753b00f7a81329ee771981222e7980e09c",
             "shasum": ""
         },
         "require": {
@@ -531,7 +530,7 @@
         "suggest": {
             "pear/auth_sasl": "Install optionally via your project's composer.json"
         },
-        "time": "2016-03-05 08:37:32",
+        "time": "2016-08-16 11:35:22",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

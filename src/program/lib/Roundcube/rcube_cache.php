@@ -235,7 +235,11 @@ class rcube_cache
         }
 
         // reset internal cache index, thanks to this we can force index reload
-        $this->index = null;
+        $this->index         = null;
+        $this->index_changed = false;
+        $this->cache         = array();
+        $this->cache_sums    = array();
+        $this->cache_changes = array();
     }
 
     /**
@@ -276,7 +280,7 @@ class rcube_cache
                 }
             }
 
-            if ($data) {
+            if ($data !== false) {
                 $md5sum = md5($data);
                 $data   = $this->unserialize($data);
 
@@ -302,10 +306,9 @@ class rcube_cache
                 0, 1, $this->userid, $this->prefix.'.'.$key);
 
             if ($sql_arr = $this->db->fetch_assoc($sql_result)) {
-                $key = substr($sql_arr['cache_key'], strlen($this->prefix)+1);
-                $md5sum = $sql_arr['data'] ? md5($sql_arr['data']) : null;
-                if ($sql_arr['data']) {
-                    $data = $this->unserialize($sql_arr['data']);
+                if (strlen($sql_arr['data']) > 0) {
+                    $md5sum = md5($sql_arr['data']);
+                    $data   = $this->unserialize($sql_arr['data']);
                 }
 
                 if ($nostore) {
@@ -639,14 +642,9 @@ class rcube_cache
                 }
                 $this->max_packet -= 2000;
             }
-            else if ($this->type == 'memcache') {
-                $stats = $this->db->getStats();
-                $remaining = $stats['limit_maxbytes'] - $stats['bytes'];
-                $this->max_packet = min($remaining / 5, $this->max_packet);
-            }
-            else if ($this->type == 'apc' && function_exists('apc_sma_info')) {
-                $stats = apc_sma_info();
-                $this->max_packet = min($stats['avail_mem'] / 5, $this->max_packet);
+            else {
+                $max_packet = rcube::get_instance()->config->get($this->type . '_max_allowed_packet');
+                $this->max_packet = parse_bytes($max_packet) ?: $this->max_packet;
             }
         }
 

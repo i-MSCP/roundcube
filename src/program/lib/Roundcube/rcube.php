@@ -209,25 +209,7 @@ class rcube
             }
 
             $this->memcache     = new Memcache;
-            $this->mc_available = 0;
-
-            // add all configured hosts to pool
-            $pconnect       = $this->config->get('memcache_pconnect', true);
-            $timeout        = $this->config->get('memcache_timeout', 1);
-            $retry_interval = $this->config->get('memcache_retry_interval', 15);
-
-            foreach ($this->config->get('memcache_hosts', array()) as $host) {
-                if (substr($host, 0, 7) != 'unix://') {
-                    list($host, $port) = explode(':', $host);
-                    if (!$port) $port = 11211;
-                }
-                else {
-                    $port = 0;
-                }
-
-                $this->mc_available += intval($this->memcache->addServer(
-                    $host, $port, $pconnect, 1, $timeout, $retry_interval, false, array($this, 'memcache_failure')));
-            }
+            $this->memcache_init();
 
             // test connection and failover (will result in $this->mc_available == 0 on complete failure)
             $this->memcache->increment('__CONNECTIONTEST__', 1);  // NOP if key doesn't exist
@@ -238,6 +220,34 @@ class rcube
         }
 
         return $this->memcache;
+    }
+
+    /**
+     * Get global handle for memcache access
+     *
+     * @return object Memcache
+     */
+    protected function memcache_init()
+    {
+        $this->mc_available = 0;
+
+        // add all configured hosts to pool
+        $pconnect       = $this->config->get('memcache_pconnect', true);
+        $timeout        = $this->config->get('memcache_timeout', 1);
+        $retry_interval = $this->config->get('memcache_retry_interval', 15);
+
+        foreach ($this->config->get('memcache_hosts', array()) as $host) {
+            if (substr($host, 0, 7) != 'unix://') {
+                list($host, $port) = explode(':', $host);
+                if (!$port) $port = 11211;
+            }
+            else {
+                $port = 0;
+            }
+
+            $this->mc_available += intval($this->memcache->addServer(
+                $host, $port, $pconnect, 1, $timeout, $retry_interval, false, array($this, 'memcache_failure')));
+        }
     }
 
     /**
@@ -1003,6 +1013,10 @@ class rcube
         if (is_object($this->storage)) {
             $this->storage->close();
         }
+
+        if ($this->config->get('log_driver') == 'syslog') {
+            closelog();
+        }
     }
 
     /**
@@ -1015,6 +1029,40 @@ class rcube
     public function add_shutdown_function($function)
     {
         $this->shutdown_functions[] = $function;
+    }
+
+    /**
+     * When you're going to sleep the script execution for a longer time
+     * it is good to close all external connections (sql, memcache, SMTP, IMAP).
+     *
+     * No action is required on wake up, all connections will be
+     * re-established automatically.
+     */
+    public function sleep()
+    {
+        foreach ($this->caches as $cache) {
+            if (is_object($cache)) {
+                $cache->close();
+            }
+        }
+
+        if ($this->storage) {
+            $this->storage->close();
+        }
+
+        if ($this->db) {
+            $this->db->closeConnection();
+        }
+
+        if ($this->memcache) {
+            $this->memcache->close();
+            // after close() need to re-init memcache
+            $this->memcache_init();
+        }
+
+        if ($this->smtp) {
+            $this->smtp->disconnect();
+        }
     }
 
     /**
@@ -1142,12 +1190,16 @@ class rcube
 
         // trigger logging hook
         if (is_object(self::$instance) && is_object(self::$instance->plugins)) {
-            $log  = self::$instance->plugins->exec_hook('write_log', array('name' => $name, 'date' => $date, 'line' => $line));
+            $log = self::$instance->plugins->exec_hook('write_log',
+                array('name' => $name, 'date' => $date, 'line' => $line));
+
             $name = $log['name'];
             $line = $log['line'];
             $date = $log['date'];
-            if ($log['abort'])
+
+            if ($log['abort']) {
                 return true;
+            }
         }
 
         // add session ID to the log
@@ -1169,32 +1221,25 @@ class rcube
         // per-user logging is activated
         if (self::$instance && self::$instance->config->get('per_user_logging', false) && self::$instance->get_user_id()) {
             $log_dir = self::$instance->get_user_log_dir();
-            if (empty($log_dir))
+            if (empty($log_dir) && $name != 'errors') {
                 return false;
+            }
         }
-        else if (!empty($log['dir'])) {
-            $log_dir = $log['dir'];
-        }
-        else if (self::$instance) {
-            $log_dir = self::$instance->config->get('log_dir');
+
+        if (empty($log_dir)) {
+            if (!empty($log['dir'])) {
+                $log_dir = $log['dir'];
+            }
+            else if (self::$instance) {
+                $log_dir = self::$instance->config->get('log_dir');
+            }
         }
 
         if (empty($log_dir)) {
             $log_dir = RCUBE_INSTALL_PATH . 'logs';
         }
 
-        // try to open specific log file for writing
-        $logfile = $log_dir.'/'.$name;
-
-        if ($fp = @fopen($logfile, 'a')) {
-            fwrite($fp, $line);
-            fflush($fp);
-            fclose($fp);
-            return true;
-        }
-
-        trigger_error("Error writing to log file $logfile; Please check permissions", E_USER_WARNING);
-        return false;
+        return file_put_contents("$log_dir/$name", $line, FILE_APPEND) !== false;
     }
 
     /**
@@ -1277,7 +1322,6 @@ class rcube
 
         // write error to local log file
         if (($level & 1) || !empty($arg_arr['fatal'])) {
-            $post_query = '';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 foreach (array('_task', '_action') as $arg) {
                     if ($_POST[$arg] && !$_GET[$arg]) {
@@ -1487,15 +1531,24 @@ class rcube
     /**
      * Unique Message-ID generator.
      *
+     * @param string $sender Optional sender e-mail address
+     *
      * @return string Message-ID
      */
-    public function gen_message_id()
+    public function gen_message_id($sender = null)
     {
         $local_part  = md5(uniqid('rcube'.mt_rand(), true));
-        $domain_part = $this->user->get_username('domain');
+        $domain_part = '';
+
+        if ($sender && preg_match('/@([^\s]+\.[a-z0-9-]+)/', $sender, $m)) {
+            $domain_part = $m[1];
+        }
+        else {
+            $domain_part = $this->user->get_username('domain');
+        }
 
         // Try to find FQDN, some spamfilters doesn't like 'localhost' (#1486924)
-        if (!preg_match('/\.[a-z]+$/i', $domain_part)) {
+        if (!preg_match('/\.[a-z0-9-]+$/i', $domain_part)) {
             foreach (array($_SERVER['HTTP_HOST'], $_SERVER['SERVER_NAME']) as $host) {
                 $host = preg_replace('/:[0-9]+$/', '', $host);
                 if ($host && preg_match('/\.[a-z]+$/i', $host)) {
@@ -1601,10 +1654,14 @@ class rcube
             // unset To,Subject headers because they will be added by the mail() function
             $header_str = $this->message_head($message, array('To', 'Subject'));
 
+            if (is_array($mailto)) {
+                $mailto = implode(', ', $mailto);
+            }
+
             // #1485779
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                if (preg_match_all('/<([^@]+@[^>]+)>/', $headers['To'], $m)) {
-                    $headers['To'] = implode(', ', $m[1]);
+                if (preg_match_all('/<([^@]+@[^>]+)>/', $mailto, $m)) {
+                    $mailto = implode(', ', $m[1]);
                 }
             }
 
@@ -1617,9 +1674,9 @@ class rcube
                     true, false);
             }
             else {
-                $delim   = $this->config->header_delimiter();
-                $to      = $headers['To'];
-                $subject = $headers['Subject'];
+                $delim      = $this->config->header_delimiter();
+                $to         = $message->encodeHeader('To', $mailto, RCUBE_CHARSET, 'quoted-printable');
+                $subject    = $headers['Subject'];
                 $header_str = rtrim($header_str);
 
                 if ($delim != "\r\n") {
@@ -1632,7 +1689,7 @@ class rcube
                 if (filter_var(ini_get('safe_mode'), FILTER_VALIDATE_BOOLEAN))
                     $sent = mail($to, $subject, $msg_body, $header_str);
                 else
-                    $sent = mail($to, $subject, $msg_body, $header_str, "-f$from");
+                    $sent = mail($to, $subject, $msg_body, $header_str, '-f ' . escapeshellarg($from));
             }
         }
 

@@ -2,7 +2,7 @@
 /**
  +-------------------------------------------------------------------------+
  | Roundcube Webmail IMAP Client                                           |
- | Version 1.2.0                                                           |
+ | Version 1.2.3                                                           |
  |                                                                         |
  | Copyright (C) 2005-2016, The Roundcube Dev Team                         |
  |                                                                         |
@@ -243,7 +243,7 @@ else {
     $disabled_actions = (array) $RCMAIL->config->get('disabled_actions');
     if (in_array($RCMAIL->task . '.' . ($RCMAIL->action ?: 'index'), $disabled_actions)) {
         rcube::raise_error(array(
-            'code' => 403, 'type' => 'php',
+            'code' => 404, 'type' => 'php',
             'message' => "Action disabled"), true, true);
     }
 }
