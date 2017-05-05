@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit9f1fea59f21cda2e6b2c9d6b1241cc13
+class ComposerStaticInitce8fa58261bbe50d018df57bb446ffb8
 {
     public static $prefixesPsr0 = array (
         'R' => 
@@ -19,6 +19,13 @@ class ComposerStaticInit9f1fea59f21cda2e6b2c9d6b1241cc13
             'PEAR' => 
             array (
                 0 => __DIR__ . '/..' . '/pear/pear_exception',
+            ),
+        ),
+        'N' => 
+        array (
+            'Net' => 
+            array (
+                0 => __DIR__ . '/..' . '/pear/net_socket',
             ),
         ),
         'C' => 
@@ -125,9 +132,9 @@ class ComposerStaticInit9f1fea59f21cda2e6b2c9d6b1241cc13
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixesPsr0 = ComposerStaticInit9f1fea59f21cda2e6b2c9d6b1241cc13::$prefixesPsr0;
-            $loader->fallbackDirsPsr0 = ComposerStaticInit9f1fea59f21cda2e6b2c9d6b1241cc13::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInit9f1fea59f21cda2e6b2c9d6b1241cc13::$classMap;
+            $loader->prefixesPsr0 = ComposerStaticInitce8fa58261bbe50d018df57bb446ffb8::$prefixesPsr0;
+            $loader->fallbackDirsPsr0 = ComposerStaticInitce8fa58261bbe50d018df57bb446ffb8::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInitce8fa58261bbe50d018df57bb446ffb8::$classMap;
 
         }, null, ClassLoader::class);
     }

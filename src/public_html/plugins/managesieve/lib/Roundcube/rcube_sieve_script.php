@@ -562,7 +562,8 @@ class rcube_sieve_script
                     $prefix .= $line . "\n";
                 }
 
-                $position = $endl + 1;
+                // skip empty lines after the comment (#5657)
+                $position = self::ltrim_position($script, $endl + 1);
             }
 
             // handle script header
@@ -805,6 +806,11 @@ class rcube_sieve_script
             $token     = !empty($tokens) ? array_shift($tokens) : $separator;
 
             switch ($token) {
+            case 'if':
+                // nested 'if' conditions, ignore the whole rule (#5540)
+                $this->_parse_actions($content, $position);
+                continue 2;
+
             case 'discard':
             case 'keep':
             case 'stop':
@@ -890,8 +896,9 @@ class rcube_sieve_script
                 break;
             }
 
-            if ($separator == $end)
+            if ($separator == $end) {
                 break;
+            }
         }
 
         return $result;
@@ -1208,7 +1215,7 @@ class rcube_sieve_script
                         if ($str[$position] == "\n") {
                             $position++;
                         }
-                        else if ($str[$position] == "\r" && $str[$position] == "\n") {
+                        else if ($str[$position] == "\r" && $str[$position + 1] == "\n") {
                             $position += 2;
                         }
 

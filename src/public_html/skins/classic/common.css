@@ -104,7 +104,7 @@ input.button
   font-size: 12px;
   padding-left: 8px;
   padding-right: 8px;
-  background: url(images/buttons/bg.gif?v=30b2.196) repeat-x #f0f0f0;
+  background: url(images/buttons/bg.gif?v=0200.203) repeat-x #f0f0f0;
   border: 1px solid #a4a4a4;
 }
 
@@ -211,7 +211,7 @@ body > #logo
   color: #666666;
   text-decoration: none;
   padding: 6px 12px 6px 26px;
-  background: url(images/taskicons.gif?v=b8e0.1519) no-repeat;
+  background: url(images/taskicons.gif?v=9719.2207) no-repeat;
 }
 
 #taskbar a:hover
@@ -455,7 +455,7 @@ body.iframe .boxtitle
   margin: 1px;
   margin-top: 2px;
   overflow: hidden;
-  background: url(images/pagenav.gif?v=2e75.355) 0 0 no-repeat transparent;
+  background: url(images/pagenav.gif?v=8464.1147) 0 0 no-repeat transparent;
   opacity: 0.99; /* this is needed to make buttons appear correctly in Chrome */
 }
 
@@ -961,7 +961,7 @@ div.searchbox,
   width: 190px;
   height: 20px;
   text-align: right;
-  background: url(images/searchfield.gif?v=aaf8.313) top left no-repeat;
+  background: url(images/searchfield.gif?v=36a5.397) top left no-repeat;
 }
 
 #quicksearchbar
@@ -1406,7 +1406,7 @@ span.tablink-selected
   height: 23px !important;
   height: 22px;
   overflow: hidden;
-  background: url(images/tabs-left.gif?v=0541.219) top left no-repeat;
+  background: url(images/tabs-left.gif?v=d7b0.230) top left no-repeat;
 }
 
 span.tablink
@@ -1433,7 +1433,7 @@ span.tablink-selected a
   overflow: hidden;
   text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
-  background: url(images/tabs-right.gif?v=5414.733) top right no-repeat;
+  background: url(images/tabs-right.gif?v=5c83.1417) top right no-repeat;
 }
 
 span.tablink-selected a

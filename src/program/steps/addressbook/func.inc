@@ -152,14 +152,18 @@ function rcmail_contact_source($source=null, $init_env=false, $writable=false)
     else
         $CONTACTS->set_page(isset($_SESSION['page']) ? $_SESSION['page'] : 1);
 
-    if (!empty($_REQUEST['_gid']))
-        $CONTACTS->set_group(rcube_utils::get_input_value('_gid', rcube_utils::INPUT_GPC));
+    if (!empty($_REQUEST['_gid'])) {
+        $group = rcube_utils::get_input_value('_gid', rcube_utils::INPUT_GPC);
+        $CONTACTS->set_group($group);
+    }
 
-    if (!$init_env)
+    if (!$init_env) {
         return $CONTACTS;
+    }
 
     $OUTPUT->set_env('readonly', $CONTACTS->readonly);
     $OUTPUT->set_env('source', (string) $source);
+    $OUTPUT->set_env('group', $group);
 
     // reduce/extend $CONTACT_COLTYPES with specification from the current $CONTACT object
     if (is_array($CONTACTS->coltypes)) {
@@ -666,8 +670,9 @@ function rcmail_contact_form($form, $record, $attrib = null)
                 }
 
                 // hack: create empty values array to force this field to be displayed
-                if (empty($values) && $colprop['visible'])
-                    $values[] = '';
+                if (empty($values) && $colprop['visible']) {
+                    $values = array('');
+                }
 
                 if (!is_array($values)) {
                     // $values can be an object, don't use (array)$values syntax
@@ -676,8 +681,9 @@ function rcmail_contact_form($form, $record, $attrib = null)
 
                 $rows = '';
                 foreach ($values as $i => $val) {
-                    if ($subtypes[$i])
+                    if ($subtypes[$i]) {
                         $subtype = $subtypes[$i];
+                    }
 
                     $colprop['id'] = 'ff_' . $col . intval($coltypes[$field]['count']);
 

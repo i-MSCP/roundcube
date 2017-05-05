@@ -228,7 +228,7 @@ class rcube_ldap extends rcube_addressbook
 
         $this->sort_col    = is_array($p['sort']) ? $p['sort'][0] : $p['sort'];
         $this->debug       = $debug;
-        $this->mail_domain = $mail_domain;
+        $this->mail_domain = $this->prop['mail_domain'] = $mail_domain;
 
         // initialize cache
         $rcube = rcube::get_instance();
@@ -260,11 +260,13 @@ class rcube_ldap extends rcube_addressbook
     {
         $rcube = rcube::get_instance();
 
-        if ($this->ready)
+        if ($this->ready) {
             return true;
+        }
 
-        if (!is_array($this->prop['hosts']))
+        if (!is_array($this->prop['hosts'])) {
             $this->prop['hosts'] = array($this->prop['hosts']);
+        }
 
         // try to connect + bind for every host configured
         // with OpenLDAP 2.x ldap_connect() always succeeds but ldap_bind will fail if host isn't reachable
@@ -838,7 +840,7 @@ class rcube_ldap extends rcube_addressbook
             }
 
             // compose a full-text-like search filter
-            $filter = rcube_ldap_generic::fulltext_search_filter($value, $attributes, $mode);
+            $filter = rcube_ldap_generic::fulltext_search_filter($value, $attributes, $mode & ~rcube_addressbook::SEARCH_GROUPS);
         }
 
         // add required (non empty) fields filter
@@ -909,7 +911,7 @@ class rcube_ldap extends rcube_addressbook
     protected function extended_search($count = false)
     {
         $prop    = $this->group_id ? $this->group_data : $this->prop;
-        $base_dn = $this->group_id ? $this->groups_base_dn : $this->base_dn;
+        $base_dn = $this->group_id ? $prop['base_dn'] : $this->base_dn;
         $attrs   = $count ? array('dn') : $this->prop['attributes'];
         $entries = array();
 

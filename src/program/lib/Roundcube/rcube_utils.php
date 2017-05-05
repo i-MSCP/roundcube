@@ -396,7 +396,7 @@ class rcube_utils
         // ignore the whole block if evil styles are detected
         $source   = self::xss_entity_decode($source);
         $stripped = preg_replace('/[^a-z\(:;]/i', '', $source);
-        $evilexpr = 'expression|behavior|javascript:|import[^a]' . (!$allow_remote ? '|url\(' : '');
+        $evilexpr = 'expression|behavior|javascript:|import[^a]' . (!$allow_remote ? '|url\((?!data:image)' : '');
 
         if (preg_match("/$evilexpr/i", $stripped)) {
             return '/* evil! */';
@@ -502,6 +502,7 @@ class rcube_utils
         $out = preg_replace_callback('/\\\([0-9a-f]{4})/i',
             array(self, 'xss_entity_decode_callback'), $out);
         $out = preg_replace('#/\*.*\*/#Ums', '', $out);
+        $out = strip_tags($out);
 
         return $out;
     }
