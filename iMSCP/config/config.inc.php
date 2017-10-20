@@ -26,6 +26,16 @@ $config = array();
 $config['db_dsnw'] = 'mysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}';
 
 // ----------------------------------
+// LOGGING/DEBUGGING
+// ----------------------------------
+
+// Log successful/failed logins to <log_dir>/userlogins or to syslog
+$config['log_logins'] = true;
+
+// Log session authentication errors to <log_dir>/session or to syslog
+$config['log_session'] = true;
+
+// ----------------------------------
 // IMAP
 // ----------------------------------
 
@@ -43,12 +53,23 @@ $config['db_dsnw'] = 'mysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 //          required to match old user data records with the new host.
 $config['default_host'] = 'localhost';
 
+// IMAP AUTH type (DIGEST-MD5, CRAM-MD5, LOGIN, PLAIN or null to use
+// best server supported one)
+$config['imap_auth_type'] = 'PLAIN';
+
 // By default list of subscribed folders is determined using LIST-EXTENDED
 // extension if available. Some servers (dovecot 1.x) returns wrong results
 // for shared namespaces in this case. http://trac.roundcube.net/ticket/1486225
 // Enable this option to force LSUB command usage instead.
 // Deprecated: Use imap_disabled_caps = array('LIST-EXTENDED')
 $config['imap_force_lsub'] = true;
+
+// Log IMAP session identifiers after each IMAP login.
+// This is used to relate IMAP session with Roundcube user sessions
+$config['imap_log_session'] = true;
+
+// Type of IMAP indexes cache. Supported values: 'db', 'apc' and 'memcache'.
+$config['imap_cache'] = 'apc';
 
 // ----------------------------------
 // SMTP
@@ -78,6 +99,10 @@ $config['smtp_user'] = '%u';
 // will use the current user's password for login
 $config['smtp_pass'] = '%p';
 
+// SMTP AUTH type (DIGEST-MD5, CRAM-MD5, LOGIN, PLAIN or empty to use
+// best server supported one)
+$config['smtp_auth_type'] = 'PLAIN';
+
 // ----------------------------------
 // SYSTEM
 // ----------------------------------
@@ -92,6 +117,11 @@ $config['session_lifetime'] = 20;
 // in the session record (and the client cookie if remember password is enabled).
 // please provide a string of exactly 24 chars.
 $config['des_key'] = '{DES_KEY}';
+
+// Encryption algorithm. You can use any method supported by openssl.
+// Default is set for backward compatibility to DES-EDE3-CBC,
+// but you can choose e.g. AES-256-CBC which we consider a better choice.
+$config['cipher_method'] = 'AES-256-CBC';
 
 // Name your service. This is displayed on the login screen and in the window title
 $config['product_name'] = 'i-MSCP Webmail';
@@ -110,8 +140,8 @@ $config['identities_level'] = 3;
 
 // List of active plugins (in plugins/ directory)
 $config['plugins'] = array(
-	'archive',
-	'zipdownload'
+    'archive',
+    'zipdownload'
 );
 
 // ----------------------------------
@@ -127,4 +157,4 @@ $config['quota_zero_as_unlimited'] = true;
 // Make use of the built-in spell checker. It is based on GoogieSpell.
 // Since Google only accepts connections over https your PHP installation
 // requires to be compiled with Open SSL support
-$config['enable_spellcheck'] = false;
+$config['enable_spellcheck'] = true;
