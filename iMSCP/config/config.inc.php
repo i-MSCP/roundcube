@@ -135,13 +135,6 @@ $config['product_name'] = 'i-MSCP Webmail';
 $config['identities_level'] = 3;
 
 // ----------------------------------
-// PLUGINS
-// ----------------------------------
-
-// List of active plugins (in plugins/ directory)
-$config['plugins'] = array();
-
-// ----------------------------------
 // USER INTERFACE
 // ----------------------------------
 
