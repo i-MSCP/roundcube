@@ -139,10 +139,7 @@ $config['identities_level'] = 3;
 // ----------------------------------
 
 // List of active plugins (in plugins/ directory)
-$config['plugins'] = array(
-    'archive',
-    'zipdownload'
-);
+$config['plugins'] = array();
 
 // ----------------------------------
 // USER INTERFACE
