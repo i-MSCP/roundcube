@@ -134,6 +134,14 @@ $config['product_name'] = 'i-MSCP Webmail';
 // 4 - one identity with possibility to edit only signature
 $config['identities_level'] = 3;
 
+// Improve system security by using special URL with security token.
+// This can be set to a number defining token length. Default: 16.
+// Warning: This requires http server configuration. Sample:
+//    RewriteRule ^/roundcubemail/[a-zA-Z0-9]{16}/(.*) /roundcubemail/$1 [PT]
+//    Alias /roundcubemail /var/www/roundcubemail/
+// Note: Use assets_path to not prevent the browser from caching assets
+$config['use_secure_urls'] = true;
+
 // ----------------------------------
 // USER INTERFACE
 // ----------------------------------
