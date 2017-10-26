@@ -1,6 +1,9 @@
 # i-MSCP Roundcube Package 
 
-Repository which provides the i-MSCP Roundcube composer package. This package
-is automatically fetched and installed by the i-MSCP installer when needed.
+Repository that provides the The Roundcube Webmail suite for i-MSCP composer
+package.
 
-Upstream release: 1.3.x Serie
+This package is automatically downloaded and installed by the i-MSCP installer
+when needed.
+
+Upstream release: 1.3.x branch
