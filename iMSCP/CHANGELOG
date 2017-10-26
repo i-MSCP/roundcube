@@ -4,6 +4,7 @@ Version 1.0.0
     Added: Cron task for cleanup of database
     Added: LOGROTATE(8) configuration file for rotation of log files
     Enhancement: Make use of APC cache for IMAP indexes cache
+    Removed: ROUNDCUBE_VERSION parameter in roundcube.data file
     Review: IMAP authentication type now set explicitly to 'PLAIN'
     Review: Log IMAP session identifiers after each IMAP login
     Review: Log successful/failed logins to <log_dir>/userlogins
