@@ -1,7 +1,5 @@
-*.PHPEditProject
-.idea
-nbproject
-.pc
-.buildpath
-.project
-.settings/org.eclipse.php.core.prefs
+/clover.xml
+/coveralls-upload.json
+/phpunit.xml
+/vendor/
+/.idea/

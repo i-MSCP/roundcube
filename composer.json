@@ -1,21 +1,43 @@
 {
   "name": "imscp/roundcube",
-  "description": "iMSCP package - The Roundcube Webmail suite for i-MSCP",
+  "type": "imscp-tool",
+  "license": "LGPL-2.1-only",
+  "description": "Provides the Roundcube Webmail client for i-MSCP",
+  "keywords": [
+    "iMSCP",
+    "tools",
+    "webmail",
+    "roundcube"
+  ],
+  "homepage": "https://www.i-mscp.net/",
   "authors": [
     {
-      "name": "Roundcube Team",
-      "email": "hello@roundcube.net",
-      "homepage": "http://roundcube.net"
+      "name": "Laurent Declercq",
+      "email": "l.declercq@nuxwin.com",
+      "homepage": "https://www.i-mscp.net"
     }
   ],
-  "license": "GPL-3.0+",
-  "keywords": [
-    "imscp",
-    "roundcube",
-    "webmail",
-    "tools"
-  ],
+  "config": {
+    "sort-packages": true
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.3.x-dev"
+    }
+  },
   "require": {
-    "php": ">=5.4.0"
+    "php": "^7.3",
+    "imscp/composer-installers": "^1.0"
+  },
+  "require-dev": {
+    "imscp/imscp-coding-standard": "^1.0",
+    "roave/security-advisories": "dev-master"
+  },
+  "scripts": {
+    "check": [
+      "@cs-check"
+    ],
+    "cs-check": "phpcs",
+    "cs-fix": "phpcbf"
   }
 }
