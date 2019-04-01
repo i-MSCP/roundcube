@@ -41,6 +41,7 @@ use iMSCP::Rights 'setRights';
 use iMSCP::Stepper qw/ startDetail endDetail step /;
 use iMSCP::TemplateParser qw/ getBloc replaceBloc process /;
 use Servers::sqld;
+use Scalar::Defer;
 use parent 'Common::Object';
 
 =head1 DESCRIPTION
@@ -70,6 +71,8 @@ sub preinstall
     return $rs if $rs;
 
     eval {
+        return if iMSCP::Getopt->skipComposerUpdate;
+
         my $composer = iMSCP::Composer->new(
             user                 => $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
             composer_home        => "$CWD/data/persistent/.composer",
@@ -392,7 +395,7 @@ sub _init
     my ( $self ) = @_;
 
     $self->{'events'} = iMSCP::EventManager->getInstance();
-    $self->{'dbh'} = iMSCP::Database->factory()->getRawDb();
+    $self->{'dbh'} = lazy { iMSCP::Database->factory()->getRawDb(); };
     $self;
 }
 

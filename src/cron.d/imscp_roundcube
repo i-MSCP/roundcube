@@ -4,4 +4,4 @@
 #  Roundcube database cleaning: finally removes all records that are
 #  marked as deleted.
 
-0 5 * * * {USER} test -x {GUI_ROOT_DIR}/vendor/imscp/roundcube/src/roundcubemail/bin/cleandb.sh && {GUI_ROOT_DIR}/vendor/imscp/roundcube/src/roundcubemail/bin/cleandb.sh >/dev/null
+0 5 * * * {USER} test -x {GUI_ROOT_DIR}/vendor/imscp/roundcube/roundcubemail/bin/cleandb.sh && {GUI_ROOT_DIR}/vendor/imscp/roundcube/roundcubemail/bin/cleandb.sh >/dev/null
