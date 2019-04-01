@@ -245,6 +245,15 @@ sub uninstall
         return $rs if $rs;
     }
 
+    for my $dir ( 'cron.d', 'logrotate.d' ) {
+        next unless -f "/etc/$dir/imscp_roundcube";
+
+        my $rs = iMSCP::File->new(
+            filename => "/etc/$dir/imscp_roundcube"
+        )->delFile();
+        return $rs if $rs;
+    }
+
     eval {
         iMSCP::Dir->new( dirname => "$CWD/data/logs/roundcube" )->remove();
 
