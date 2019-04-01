@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 - TBD
+## 1.0.0 - 20190401
 
 Initial release.
 
