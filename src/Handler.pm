@@ -38,6 +38,7 @@ use iMSCP::EventManager;
 use iMSCP::Execute qw/ execute executeNoWait /;
 use iMSCP::File;
 use iMSCP::Rights 'setRights';
+use iMSCP::Stepper qw/ startDetail endDetail step /;
 use iMSCP::TemplateParser qw/ getBloc replaceBloc process /;
 use Servers::sqld;
 use parent 'Common::Object';
@@ -69,12 +70,11 @@ sub preinstall
     return $rs if $rs;
 
     eval {
-
         my $composer = iMSCP::Composer->new(
             user                 => $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
             composer_home        => "$CWD/data/persistent/.composer",
             composer_working_dir => "$CWD/vendor/imscp/roundcube/roundcubemail",
-            composer_jon         => 'composer.json-dist'
+            composer_json        => 'composer.json-dist'
         );
         $composer->setStdRoutines(
             sub {},
@@ -84,23 +84,24 @@ sub preinstall
 
                 debug( $_[0] );
                 step( undef, <<"EOT", 2, 1 );
-Installing/Updating Roundcube PHP dependencies...
+Installing Roundcube PHP dependencies...
 
 $_[0]
 
 Depending on your internet connection speed, this may take few seconds...
 EOT
-            } );
+            }
+        );
 
         $composer->dumpComposerJson();
 
         # Install Roundcube PHP dependencies
-        $composer->install();
+        $composer->install( TRUE );
 
         # Install Roundcube Javascript dependencies
         my $stderr;
         executeNoWait(
-            _getSuCmd(
+            $self->_getSuCmd(
                 "$CWD/vendor/imscp/roundcube/roundcubemail/bin/install-jsdeps.sh"
             ),
             sub {
@@ -108,7 +109,7 @@ EOT
                 return unless length $_[0];
                 debug( $_[0] );
                 step( undef, <<"EOT", 2, 2 );
-Installing/Updating Roundcube Javascript dependencies...
+Installing Roundcube Javascript dependencies...
 
 $_[0]
 
@@ -150,8 +151,10 @@ sub install
 
     my $rs ||= $self->_buildConfigFiles();
     $rs ||= $self->_buildHttpdConfigFile();
-    $rs ||= $self->_setupDatabase();
+    # Need to be done before database setup as the Roundcube scripts
+    # rely on SQL user to create/update database.
     $rs ||= $self->_setupSqlUser();
+    $rs ||= $self->_setupDatabase();
     return $rs if $rs;
 
     eval {
@@ -190,7 +193,7 @@ sub postinstall
     }
 
     unless ( symlink( File::Spec->abs2rel(
-        "$CWD/vendor/imscp/roundcube/roundcubemail", "$CWD/public/tools"
+        "$CWD/vendor/imscp/roundcube/roundcubemail/public_html", "$CWD/public/tools"
     ),
         "$CWD/public/tools/roundcube"
     ) ) {
@@ -233,12 +236,9 @@ sub uninstall
         iMSCP::Dir->new( dirname => "$CWD/data/logs/roundcube" )->remove();
 
         local $self->{'dbh'}->{'RaiseError'} = TRUE;
+
         $self->{'dbh'}->do(
-            "DROP DATABASE IF EXISTS @{ [
-                $self->{'dbh'}->quote_identifier(
-                    $::imscpConfig{'DATABASE_NAME'} . '_roundcube'
-                )
-            ] }"
+            "DROP DATABASE IF EXISTS @{ [ $self->{'dbh'}->quote_identifier( $::imscpConfig{'DATABASE_NAME'} . '_roundcube' ) ] }"
         );
 
         my ( $databaseUser ) = @{ $self->{'dbh'}->selectcol_arrayref(
@@ -351,10 +351,10 @@ sub afterFrontEndBuildConfFile
         "# SECTION custom END.\n",
         "    # SECTION custom BEGIN.\n"
             . getBloc(
-            "# SECTION custom BEGIN.\n",
-            "# SECTION custom END.\n",
-            ${ $tplContent }
-        )
+                "# SECTION custom BEGIN.\n",
+                "# SECTION custom END.\n",
+                ${ $tplContent }
+            )
             . "    include imscp_roundcube.conf;\n"
             . "    # SECTION custom END.\n",
         ${ $tplContent }
@@ -398,13 +398,11 @@ sub _buildConfigFiles
 {
     my ( $self ) = @_;
 
-    # Main configuration file
-
     my $rs = eval {
         local $self->{'dbh'}->{'RaiseError'} = TRUE;
 
         my %config = @{ $self->{'dbh'}->selectcol_arrayref(
-            "SELECT `name`, `value` FROM `config` WHERE `name` LIKE 'PMA_%'",
+            "SELECT `name`, `value` FROM `config` WHERE `name` LIKE 'ROUNDCUBE_%'",
             { Columns => [ 1, 2 ] }
         ) };
 
@@ -457,6 +455,7 @@ sub _buildConfigFiles
             DES_KEY           => $config{'ROUNDCUBE_DES_KEY'},
             DATABASE_HOSTNAME => ::setupGetQuestion( 'DATABASE_HOST' ),
             DATABASE_PORT     => ::setupGetQuestion( 'DATABASE_PORT' ),
+            DATABASE_NAME     => ::setupGetQuestion( 'DATABASE_NAME' ) . '_roundcube',
             DATABASE_USER     => $config{'ROUNDCUBE_SQL_USER'},
             DATABASE_PASSWORD => $config{'ROUNDCUBE_SQL_USER_PASSWD'},
             LOG_DIR           => $CWD . '/data/logs/roundcube',
@@ -477,13 +476,15 @@ sub _buildConfigFiles
 
         $cfgTpl = process( $data, $cfgTpl );
 
-        my $ug = $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'};
         my $file = iMSCP::File->new(
-            filename => "$CWD/vendor/imscp/roundcube/config/config.inc.php"
+            filename => "$CWD/vendor/imscp/roundcube/roundcubemail/config/config.inc.php"
         );
         $file->set( $cfgTpl );
         $rs = $file->save();
-        $rs ||= $file->owner( $ug, $ug );
+        $rs ||= $file->owner(
+            $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
+            $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'}
+        );
 
         # Cron and logrotate configuration files
         for my $dir ( 'cron.d', 'logrotate.d' ) {
@@ -496,8 +497,8 @@ sub _buildConfigFiles
             ${ $fileC } = process(
                 {
                     GUI_ROOT_DIR => $CWD,
-                    USER         => $ug,
-                    GROUP        => $ug
+                    USER         => $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
+                    GROUP        => $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'}
                 },
                 ${ $fileC }
             );
@@ -529,7 +530,7 @@ sub _buildConfigFiles
 sub _buildHttpdConfigFile
 {
     my $rs = iMSCP::File->new(
-        filename => "$CWD/imscp/roundcube/src/nginx.conf"
+        filename => "$CWD/vendor/imscp/roundcube/src/nginx.conf"
     )->copyFile( '/etc/nginx/imscp_roundcube.conf' );
     return $rs if $rs;
 
@@ -539,82 +540,6 @@ sub _buildHttpdConfigFile
     ${ $fileC } = process( { GUI_ROOT_DIR => $CWD }, ${ $fileC } );
 
     $file->save();
-}
-
-=item _setupDatabase( )
-
- Setup datbase for Roundcube
-
- Return int 0 on success, other on failure
-
-=cut
-
-sub _setupDatabase
-{
-    my ( $self ) = @_;
-
-    my $database = ::setupGetQuestion( 'DATABASE_NAME' ) . '_roundcube';
-    my $quotedDatabase = $self->{'dbh'}->quote_identifier( $database );
-
-    if ( !$self->{'dbh'}->selectrow_hashref( 'SHOW DATABASES LIKE ?', undef, $quotedDatabase )
-        || !$self->{'dbh'}->selectrow_hashref( "SHOW TABLES FROM $quotedDatabase" )
-    ) {
-        $self->{'dbh'}->do(
-            "
-                CREATE DATABASE IF NOT EXISTS $quotedDatabase
-                CHARACTER SET utf8 COLLATE utf8_unicode_ci
-            "
-        );
-
-        # Create Roundcube database
-        my $rs = execute(
-            [
-                "$CWD/vendor/imscp/roundcube/roundcubemail/bin/initdb.sh",
-                '--dir',
-                "$CWD/vendor/imscp/roundcube/roundcubemail/SQL",
-                '--package',
-                'roundcube'
-            ],
-            \my $stdout,
-            \my $stderr
-        );
-        debug( $stdout ) if length $stdout;
-        $rs == 0 or die( $stderr || 'Unknown error' );
-    } else {
-        # Update Roundcube database
-        my $rs = execute(
-            [
-                "$CWD/vendor/imscp/roundcube/roundcubemail/bin/updatedb.sh",
-                '--dir',
-                "$CWD/vendor/imscp/roundcube/roundcubemail/SQL",
-                '--package',
-                'roundcube'
-            ],
-            \my $stdout,
-            \my $stderr
-        );
-        debug( $stdout ) if length $stdout;
-        $rs == 0 or die( $stderr || 'Unknown error' );
-
-        # Ensure tha `users`.`mail_host` entries are set with expected hostname
-        my $hostname = 'localhost';
-        $self->{'eventManager'}->trigger(
-            'beforeUpdateRoundCubeMailHostEntries', \$hostname
-        );
-
-        $self->{'dbh'}->do(
-            "UPDATE IGNORE $quotedDatabase.`users` SET `mail_host` = ?",
-            undef,
-            $hostname
-        );
-        $self->{'dbh'}->do(
-            "DELETE FROM $quotedDatabase.`users` WHERE `mail_host` <> ?",
-            undef,
-            $hostname
-        );
-    }
-
-    0;
 }
 
 =item _setupSqlUser( )
@@ -664,14 +589,94 @@ sub _setupSqlUser
         # See https://bugs.mysql.com/bug.php?id=18660
         $self->{'dbh'}->do(
             "
-                GRANT SELECT (mail_addr, mail_pass), UPDATE (mail_pass)
-                ON @{ [ $self->{'dbh'}->quote_identifier( ::setupGetQuestion( 'DATABASE_NAME' )) ] }.mail_users
+                GRANT SELECT (`mail_addr`, `mail_pass`), UPDATE (`mail_pass`)
+                ON @{ [ $self->{'dbh'}->quote_identifier( ::setupGetQuestion( 'DATABASE_NAME' )) ] }.`mail_users`
                 TO ?\@?
             ",
             undef,
             $self->{'_roundcube_sql_user'},
             $dbUserHost
         );
+    };
+    if ( $@ ) {
+        error( $@ );
+        return 1;
+    }
+
+    0;
+}
+
+=item _setupDatabase( )
+
+ Setup datbase for Roundcube
+
+ Return int 0 on success, other on failure
+
+=cut
+
+sub _setupDatabase
+{
+    my ( $self ) = @_;
+
+    eval {
+        local $self->{'dbh'}->{'RaiseError'} = TRUE;
+
+        my $database = ::setupGetQuestion( 'DATABASE_NAME' ) . '_roundcube';
+        my $quotedDatabase = $self->{'dbh'}->quote_identifier( $database );
+
+        if ( !$self->{'dbh'}->selectrow_hashref( 'SHOW DATABASES LIKE ?', undef, $database )
+            || !$self->{'dbh'}->selectrow_hashref( "SHOW TABLES FROM $quotedDatabase" )
+        ) {
+            $self->{'dbh'}->do(
+                "
+                    CREATE DATABASE IF NOT EXISTS $quotedDatabase
+                    CHARACTER SET utf8 COLLATE utf8_unicode_ci
+                "
+            );
+
+            # Create Roundcube database
+            my $rs = execute(
+                $self->_getSuCmd(
+                    "$CWD/vendor/imscp/roundcube/roundcubemail/bin/initdb.sh",
+                    '--dir', "$CWD/vendor/imscp/roundcube/roundcubemail/SQL",
+                    '--package', 'roundcube'
+                ),
+                \my $stdout,
+                \my $stderr
+            );
+            debug( $stdout ) if length $stdout;
+            $rs == 0 or die( $stderr || 'Unknown error' );
+        } else {
+            # Update Roundcube database
+            my $rs = execute(
+                $self->_getSuCmd(
+                    "$CWD/vendor/imscp/roundcube/roundcubemail/bin/updatedb.sh",
+                    '--dir', "$CWD/vendor/imscp/roundcube/roundcubemail/SQL",
+                    '--package', 'roundcube'
+                ),
+                \my $stdout,
+                \my $stderr
+            );
+            debug( $stdout ) if length $stdout;
+            $rs == 0 or die( $stderr || 'Unknown error' );
+
+            # Ensure tha `users`.`mail_host` entries are set with expected hostname
+            my $hostname = 'localhost';
+            $self->{'events'}->trigger(
+                'beforeUpdateRoundCubeMailHostEntries', \$hostname
+            );
+
+            $self->{'dbh'}->do(
+                "UPDATE IGNORE $quotedDatabase.`users` SET `mail_host` = ?",
+                undef,
+                $hostname
+            );
+            $self->{'dbh'}->do(
+                "DELETE FROM $quotedDatabase.`users` WHERE `mail_host` <> ?",
+                undef,
+                $hostname
+            );
+        }
     };
     if ( $@ ) {
         error( $@ );
@@ -698,8 +703,7 @@ sub _getSuCmd
         '/bin/su',
         '-l', $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
         '-s', '/bin/sh',
-        '-c',
-        "/usr/bin/php -d allow_url_fopen=1 @_"
+        '-c', "@_"
     ];
 }
 
