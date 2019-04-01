@@ -79,12 +79,12 @@ sub preinstall
         $composer->setStdRoutines(
             sub {},
             sub {
-                chomp $_[0];
+                chomp( $_[0] );
                 return unless length $_[0];
 
                 debug( $_[0] );
                 step( undef, <<"EOT", 2, 1 );
-Installing Roundcube PHP dependencies...
+Installing/Updating Roundcube PHP dependencies...
 
 $_[0]
 
@@ -95,8 +95,10 @@ EOT
 
         $composer->dumpComposerJson();
 
-        # Install Roundcube PHP dependencies
-        $composer->install( TRUE );
+        startDetail();
+
+        # Install/Update Roundcube PHP dependencies
+        $composer->update( TRUE );
 
         # Install Roundcube Javascript dependencies
         my $stderr;
@@ -105,8 +107,15 @@ EOT
                 "$CWD/vendor/imscp/roundcube/roundcubemail/bin/install-jsdeps.sh"
             ),
             sub {
-                chomp $_[0];
+                chomp( $_[0] );
                 return unless length $_[0];
+
+                # See https://github.com/roundcube/roundcubemail/issues/6704
+                die( sprintf(
+                    "Couldn't install Roundcube Javascript dependencies: %s",
+                    $_[0]
+                )) if $_[0] =~ /^error/i;
+
                 debug( $_[0] );
                 step( undef, <<"EOT", 2, 2 );
 Installing Roundcube Javascript dependencies...
@@ -117,13 +126,14 @@ Depending on your internet connection speed, this may take few seconds...
 EOT
             },
             sub {
-                chomp $_[0];
+                chomp( $_[0] );
                 return unless length $_[0];
-                $stderr .= $_[0];
+                $stderr .= "$_[0]";
             }
         ) == 0 or die( sprintf(
             "Couldn't install Roundcube Javascript dependencies: %s", $stderr || 'Unknown error'
         ));
+        endDetail();
     };
     if ( $@ ) {
         error( $@ );
