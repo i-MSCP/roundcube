@@ -27,7 +27,6 @@ use strict;
 use warnings;
 use Class::Autouse qw/ :nostat iMSCP::Composer /;
 use File::Spec;
-use File::Temp;
 use iMSCP::Boolean;
 use iMSCP::Crypt qw/ decryptRijndaelCBC encryptRijndaelCBC randomStr /;
 use iMSCP::Cwd '$CWD';
@@ -210,7 +209,7 @@ sub postinstall
     ),
         "$CWD/public/tools/roundcube"
     ) ) {
-        error( sprintf( "Couldn't create symlink for Roundcube webmail" ));
+        error( sprintf( "Couldn't create symlink for the Roundcube webmail" ));
         return 1;
     }
 
@@ -342,7 +341,7 @@ sub deleteMail
         return 1;
     }
 
-    1;
+    0;
 }
 
 =back
@@ -410,7 +409,7 @@ sub _init
 
 =item _buildConfigFiles( )
 
- Build PhpMyadminConfiguration files 
+ Build Roundcube configuration files 
 
  Return int 0 on success, other on failure
   
@@ -424,7 +423,11 @@ sub _buildConfigFiles
         local $self->{'dbh'}->{'RaiseError'} = TRUE;
 
         my %config = @{ $self->{'dbh'}->selectcol_arrayref(
-            "SELECT `name`, `value` FROM `config` WHERE `name` LIKE 'ROUNDCUBE_%'",
+            "
+                SELECT `name`, `value`
+                FROM `config` WHERE `name`
+                LIKE 'ROUNDCUBE_%'
+            ",
             { Columns => [ 1, 2 ] }
         ) };
 
@@ -449,7 +452,7 @@ sub _buildConfigFiles
             $config{'ROUNDCUBE_SQL_USER'}, $config{'ROUNDCUBE_SQL_USER_PASSWD'}
         );
 
-        local $self->{'dbh'}->{'RaiseError'} = TRUE;
+        # Save generated values in database (encrypted)
         $self->{'dbh'}->do(
             '
                 INSERT INTO `config` (`name`,`value`)
@@ -535,7 +538,7 @@ sub _buildConfigFiles
     };
     if ( $@ ) {
         error( $@ );
-        return 1;
+        $rs = 1;
     }
 
     $rs;
@@ -640,7 +643,7 @@ sub _setupDatabase
 {
     my ( $self ) = @_;
 
-    eval {
+    my $rs = eval {
         local $self->{'dbh'}->{'RaiseError'} = TRUE;
 
         my $database = ::setupGetQuestion( 'DATABASE_NAME' ) . '_roundcube';
@@ -667,45 +670,49 @@ sub _setupDatabase
                 \my $stderr
             );
             debug( $stdout ) if length $stdout;
-            $rs == 0 or die( $stderr || 'Unknown error' );
-        } else {
-            # Update Roundcube database
-            my $rs = execute(
-                $self->_getSuCmd(
-                    "$CWD/vendor/imscp/roundcube/roundcubemail/bin/updatedb.sh",
-                    '--dir', "$CWD/vendor/imscp/roundcube/roundcubemail/SQL",
-                    '--package', 'roundcube'
-                ),
-                \my $stdout,
-                \my $stderr
-            );
-            debug( $stdout ) if length $stdout;
-            $rs == 0 or die( $stderr || 'Unknown error' );
-
-            # Ensure tha `users`.`mail_host` entries are set with expected hostname
-            my $hostname = 'localhost';
-            $self->{'events'}->trigger(
-                'beforeUpdateRoundCubeMailHostEntries', \$hostname
-            );
-
-            $self->{'dbh'}->do(
-                "UPDATE IGNORE $quotedDatabase.`users` SET `mail_host` = ?",
-                undef,
-                $hostname
-            );
-            $self->{'dbh'}->do(
-                "DELETE FROM $quotedDatabase.`users` WHERE `mail_host` <> ?",
-                undef,
-                $hostname
-            );
+            error( $stderr || 'Unknown error' ) if $rs;
+            return $rs;
         }
+
+        # Update Roundcube database
+        my $rs = execute(
+            $self->_getSuCmd(
+                "$CWD/vendor/imscp/roundcube/roundcubemail/bin/updatedb.sh",
+                '--dir', "$CWD/vendor/imscp/roundcube/roundcubemail/SQL",
+                '--package', 'roundcube'
+            ),
+            \my $stdout,
+            \my $stderr
+        );
+        debug( $stdout ) if length $stdout;
+        error( $stderr || 'Unknown error' ) if $rs;
+        return $rs if $rs;
+
+        # Ensure tha `users`.`mail_host` entries are set with expected hostname
+        my $hostname = 'localhost';
+        $self->{'events'}->trigger(
+            'beforeUpdateRoundCubeMailHostEntries', \$hostname
+        );
+
+        $self->{'dbh'}->do(
+            "UPDATE IGNORE $quotedDatabase.`users` SET `mail_host` = ?",
+            undef,
+            $hostname
+        );
+        $self->{'dbh'}->do(
+            "DELETE FROM $quotedDatabase.`users` WHERE `mail_host` <> ?",
+            undef,
+            $hostname
+        );
+
+        0;
     };
     if ( $@ ) {
         error( $@ );
-        return 1;
+        $rs = 1;
     }
 
-    0;
+    $rs;
 }
 
 =item _getSuCmd( @_ )
