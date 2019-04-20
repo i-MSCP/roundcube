@@ -69,37 +69,34 @@ sub preinstall
     my $rs = $self->setGuiPermissions();
     return $rs if $rs;
 
+    local $@;
     eval {
         return if iMSCP::Getopt->skipComposerUpdate;
 
         my $composer = iMSCP::Composer->new(
-            user                 => $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
+            user                 => $::imscpConfig{'SYSTEM_USER_PREFIX'}
+                . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
             composer_home        => "$CWD/data/persistent/.composer",
             composer_working_dir => "$CWD/vendor/imscp/roundcube/roundcubemail",
             composer_json        => 'composer.json-dist'
         );
-        $composer->setStdRoutines(
-            sub {},
-            sub {
-                chomp( $_[0] );
-                return unless length $_[0];
 
-                debug( $_[0] );
-                step( undef, <<"EOT", 2, 1 );
+        my $stdRoutine = sub {
+            chomp( $_[0] );
+            debug( $_[0] );
+            step( undef, <<"EOT", 2, 1 );
 Installing/Updating Roundcube PHP dependencies...
 
 $_[0]
 
 Depending on your internet connection speed, this may take few seconds...
 EOT
-            }
-        );
-
-        $composer->dumpComposerJson();
+        };
 
         startDetail();
-
-        # Install/Update Roundcube PHP dependencies
+        $composer->setStdRoutines( $stdRoutine, $stdRoutine );
+        $composer->dumpComposerJson();
+        # Install Roundcube PHP dependencies
         $composer->update( TRUE );
 
         # Install Roundcube Javascript dependencies
@@ -109,9 +106,6 @@ EOT
                 "$CWD/vendor/imscp/roundcube/roundcubemail/bin/install-jsdeps.sh"
             ),
             sub {
-                chomp( $_[0] );
-                return unless length $_[0];
-
                 # See https://github.com/roundcube/roundcubemail/issues/6704
                 die( sprintf(
                     "Couldn't install Roundcube Javascript dependencies: %s",
@@ -127,13 +121,10 @@ $_[0]
 Depending on your internet connection speed, this may take few seconds...
 EOT
             },
-            sub {
-                chomp( $_[0] );
-                return unless length $_[0];
-                $stderr .= "$_[0]";
-            }
+            sub { $stderr .= "$_[0]"; }
         ) == 0 or die( sprintf(
-            "Couldn't install Roundcube Javascript dependencies: %s", $stderr || 'Unknown error'
+            "Couldn't install Roundcube Javascript dependencies: %s",
+            $stderr || 'Unknown error'
         ));
         endDetail();
     };
@@ -169,10 +160,13 @@ sub install
     $rs ||= $self->_setupDatabase();
     return $rs if $rs;
 
+    local $@;
     eval {
         iMSCP::Dir->new( dirname => "$CWD/data/logs/roundcube" )->make( {
-            user           => $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
-            group          => $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
+            user           => $::imscpConfig{'SYSTEM_USER_PREFIX'}
+                . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
+            group          => $::imscpConfig{'SYSTEM_USER_PREFIX'}
+                . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
             mode           => 0755,
             fixpermissions => TRUE
         } );
@@ -197,15 +191,16 @@ sub postinstall
 {
     local $CWD = $::imscpConfig{'GUI_ROOT_DIR'};
 
-    if ( -l "$CWD/public/tools/Roundcube" ) {
+    if ( -l "$CWD/public/tools/roundcube" ) {
         my $rs = iMSCP::File->new(
-            filename => "$CWD/public/tools/Roundcube"
+            filename => "$CWD/public/tools/roundcube"
         )->delFile();
         return $rs if $rs;
     }
 
     unless ( symlink( File::Spec->abs2rel(
-        "$CWD/vendor/imscp/roundcube/roundcubemail/public_html", "$CWD/public/tools"
+        "$CWD/vendor/imscp/roundcube/roundcubemail/public_html",
+        "$CWD/public/tools"
     ),
         "$CWD/public/tools/roundcube"
     ) ) {
@@ -253,13 +248,14 @@ sub uninstall
         return $rs if $rs;
     }
 
+    local $@;
     eval {
         iMSCP::Dir->new( dirname => "$CWD/data/logs/roundcube" )->remove();
 
         local $self->{'dbh'}->{'RaiseError'} = TRUE;
 
         $self->{'dbh'}->do(
-            "DROP DATABASE IF EXISTS @{ [ $self->{'dbh'}->quote_identifier( $::imscpConfig{'DATABASE_NAME'} . '_roundcube' ) ] }"
+            "DROP DATABASE IF EXISTS `@{ [ $::imscpConfig{'DATABASE_NAME'} . '_roundcube' ] }`"
         );
 
         my ( $databaseUser ) = @{ $self->{'dbh'}->selectcol_arrayref(
@@ -325,11 +321,12 @@ sub deleteMail
 
     return unless $moduleData->{'MAIL_TYPE'} =~ /_mail/;
 
+    local $@;
     eval {
         local $self->{'dbh'}->{'RaiseError'} = TRUE;
         $self->{'dbh'}->do(
             "
-                DELETE FROM @{ [ $self->{'dbh'}->quote_identifier( $::imscpConfig{'DATABASE_NAME'} . '_roundcube' ) ] }.`users`
+                DELETE FROM `@{ [ $::imscpConfig{'DATABASE_NAME'} . '_roundcube' ] }`.`users`
                 WHERE `username` = ?
             ",
             undef,
@@ -372,10 +369,10 @@ sub afterFrontEndBuildConfFile
         "# SECTION custom END.\n",
         "    # SECTION custom BEGIN.\n"
             . getBloc(
-                "# SECTION custom BEGIN.\n",
-                "# SECTION custom END.\n",
-                ${ $tplContent }
-            )
+            "# SECTION custom BEGIN.\n",
+            "# SECTION custom END.\n",
+            ${ $tplContent }
+        )
             . "    include imscp_roundcube.conf;\n"
             . "    # SECTION custom END.\n",
         ${ $tplContent }
@@ -419,6 +416,7 @@ sub _buildConfigFiles
 {
     my ( $self ) = @_;
 
+    local $@;
     my $rs = eval {
         local $self->{'dbh'}->{'RaiseError'} = TRUE;
 
@@ -480,7 +478,8 @@ sub _buildConfigFiles
             DES_KEY           => $config{'ROUNDCUBE_DES_KEY'},
             DATABASE_HOSTNAME => ::setupGetQuestion( 'DATABASE_HOST' ),
             DATABASE_PORT     => ::setupGetQuestion( 'DATABASE_PORT' ),
-            DATABASE_NAME     => ::setupGetQuestion( 'DATABASE_NAME' ) . '_roundcube',
+            DATABASE_NAME     => ::setupGetQuestion( 'DATABASE_NAME' )
+                . '_roundcube',
             DATABASE_USER     => $config{'ROUNDCUBE_SQL_USER'},
             DATABASE_PASSWORD => $config{'ROUNDCUBE_SQL_USER_PASSWD'},
             LOG_DIR           => $CWD . '/data/logs/roundcube',
@@ -522,13 +521,17 @@ sub _buildConfigFiles
             ${ $fileC } = process(
                 {
                     GUI_ROOT_DIR => $CWD,
-                    USER         => $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
-                    GROUP        => $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'}
+                    USER         => $::imscpConfig{'SYSTEM_USER_PREFIX'}
+                        . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
+                    GROUP        => $::imscpConfig{'SYSTEM_USER_PREFIX'}
+                        . $::imscpConfig{'SYSTEM_USER_MIN_UID'}
                 },
                 ${ $fileC }
             );
 
-            $file = iMSCP::File->new( filename => "/etc/$dir/imscp_roundcube" );
+            $file = iMSCP::File->new(
+                filename => "/etc/$dir/imscp_roundcube"
+            );
             $file->set( ${ $fileC } );
             $rs = $file->save();
             return $rs if $rs;
@@ -559,7 +562,9 @@ sub _buildHttpdConfigFile
     )->copyFile( '/etc/nginx/imscp_roundcube.conf' );
     return $rs if $rs;
 
-    my $file = iMSCP::File->new( filename => '/etc/nginx/imscp_roundcube.conf' );
+    my $file = iMSCP::File->new(
+        filename => '/etc/nginx/imscp_roundcube.conf'
+    );
     return 1 unless defined( my $fileC = $file->getAsRef());
 
     ${ $fileC } = process( { GUI_ROOT_DIR => $CWD }, ${ $fileC } );
@@ -579,34 +584,37 @@ sub _setupSqlUser
 {
     my ( $self ) = @_;
 
+    local $@;
     eval {
         my $database = ::setupGetQuestion( 'DATABASE_NAME' ) . '_roundcube';
-        my $dbUserHost = ::setupGetQuestion( 'DATABASE_USER_HOST' );
+        my $databaseUserHost = ::setupGetQuestion( 'DATABASE_USER_HOST' );
         my $sqlServer = Servers::sqld->factory();
 
-        for my $host ( $::imscpOldConfig{'DATABASE_USER_HOST'}, $dbUserHost ) {
+        for my $host (
+            $::imscpOldConfig{'DATABASE_USER_HOST'},
+            $databaseUserHost
+        ) {
             next unless length $host;
             $sqlServer->dropUser( $self->{'_roundcube_sql_user'}, $host );
         }
 
         $sqlServer->createUser(
             $self->{'_roundcube_sql_user'},
-            $dbUserHost,
+            $databaseUserHost,
             $self->{'_roundcube_control_user_passwd'}
         );
 
         local $self->{'dbh'}->{'RaiseError'} = TRUE;
 
         # Grant 'all' privileges on the imscp_roundcube database
-        # No need to escape wildcard characters.
         $self->{'dbh'}->do(
             "
-                GRANT ALL PRIVILEGES ON @{ [ $self->{'dbh'}->quote_identifier( $database =~ s/([%_])/\\$1/gr ) ] }.*
+                GRANT ALL PRIVILEGES ON `@{ [ $database =~ s/([%_])/\\$1/gr ] }`.*
                 TO ?\@?
             ",
             undef,
             $self->{'_roundcube_sql_user'},
-            $dbUserHost
+            $databaseUserHost
         );
 
         # Grant 'select' privileges on the imscp.mail table
@@ -615,12 +623,12 @@ sub _setupSqlUser
         $self->{'dbh'}->do(
             "
                 GRANT SELECT (`mail_addr`, `mail_pass`), UPDATE (`mail_pass`)
-                ON @{ [ $self->{'dbh'}->quote_identifier( ::setupGetQuestion( 'DATABASE_NAME' )) ] }.`mail_users`
+                ON `@{ [ ::setupGetQuestion( 'DATABASE_NAME' ) ] }`.`mail_users`
                 TO ?\@?
             ",
             undef,
             $self->{'_roundcube_sql_user'},
-            $dbUserHost
+            $databaseUserHost
         );
     };
     if ( $@ ) {
@@ -643,18 +651,20 @@ sub _setupDatabase
 {
     my ( $self ) = @_;
 
+    local $@;
     my $rs = eval {
         local $self->{'dbh'}->{'RaiseError'} = TRUE;
 
         my $database = ::setupGetQuestion( 'DATABASE_NAME' ) . '_roundcube';
-        my $quotedDatabase = $self->{'dbh'}->quote_identifier( $database );
 
-        if ( !$self->{'dbh'}->selectrow_hashref( 'SHOW DATABASES LIKE ?', undef, $database )
-            || !$self->{'dbh'}->selectrow_hashref( "SHOW TABLES FROM $quotedDatabase" )
-        ) {
+        if ( !$self->{'dbh'}->selectrow_hashref(
+            'SHOW DATABASES LIKE ?', undef, $database
+        ) || !$self->{'dbh'}->selectrow_hashref(
+            "SHOW TABLES FROM `$database`"
+        ) ) {
             $self->{'dbh'}->do(
                 "
-                    CREATE DATABASE IF NOT EXISTS $quotedDatabase
+                    CREATE DATABASE IF NOT EXISTS `$database`
                     CHARACTER SET utf8 COLLATE utf8_unicode_ci
                 "
             );
@@ -695,12 +705,18 @@ sub _setupDatabase
         );
 
         $self->{'dbh'}->do(
-            "UPDATE IGNORE $quotedDatabase.`users` SET `mail_host` = ?",
+            "
+                UPDATE IGNORE `$database`.`users`
+                SET `mail_host` = ?
+            ",
             undef,
             $hostname
         );
         $self->{'dbh'}->do(
-            "DELETE FROM $quotedDatabase.`users` WHERE `mail_host` <> ?",
+            "
+                DELETE FROM `$database`.`users`
+                WHERE `mail_host` <> ?
+            ",
             undef,
             $hostname
         );
@@ -730,7 +746,8 @@ sub _getSuCmd
 
     [
         '/bin/su',
-        '-l', $::imscpConfig{'SYSTEM_USER_PREFIX'} . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
+        '-l', $::imscpConfig{'SYSTEM_USER_PREFIX'}
+        . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
         '-s', '/bin/sh',
         '-c', "@_"
     ];
