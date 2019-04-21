@@ -106,6 +106,7 @@ EOT
                 "$CWD/vendor/imscp/roundcube/roundcubemail/bin/install-jsdeps.sh"
             ),
             sub {
+                chomp( $_[0] );
                 # See https://github.com/roundcube/roundcubemail/issues/6704
                 die( sprintf(
                     "Couldn't install Roundcube Javascript dependencies: %s",
@@ -121,7 +122,7 @@ $_[0]
 Depending on your internet connection speed, this may take few seconds...
 EOT
             },
-            sub { $stderr .= "$_[0]"; }
+            sub { $stderr .= "$_[0]\n"; }
         ) == 0 or die( sprintf(
             "Couldn't install Roundcube Javascript dependencies: %s",
             $stderr || 'Unknown error'
@@ -369,10 +370,10 @@ sub afterFrontEndBuildConfFile
         "# SECTION custom END.\n",
         "    # SECTION custom BEGIN.\n"
             . getBloc(
-            "# SECTION custom BEGIN.\n",
-            "# SECTION custom END.\n",
-            ${ $tplContent }
-        )
+                "# SECTION custom BEGIN.\n",
+                "# SECTION custom END.\n",
+                ${ $tplContent }
+            )
             . "    include imscp_roundcube.conf;\n"
             . "    # SECTION custom END.\n",
         ${ $tplContent }

@@ -23,6 +23,7 @@
 - CS fixes (package handler)
 - Localize $@ variable (package handler)
 - Couldn't create symlink for the Roundcube webmail (package handler)
+- Unwanted line breaks when installing Roundcube Javascript dependencies (package handler)
 
 ## 1.0.2 - 20190410
 
