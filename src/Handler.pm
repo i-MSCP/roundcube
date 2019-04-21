@@ -83,6 +83,9 @@ sub preinstall
 
         my $stdRoutine = sub {
             chomp( $_[0] );
+
+            return unless length $_[0];
+
             debug( $_[0] );
             step( undef, <<"EOT", 2, 1 );
 Installing/Updating Roundcube PHP dependencies...
