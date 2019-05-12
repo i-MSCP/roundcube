@@ -256,8 +256,6 @@ sub uninstall
     eval {
         iMSCP::Dir->new( dirname => "$CWD/data/logs/roundcube" )->remove();
 
-        local $self->{'dbh'}->{'RaiseError'} = TRUE;
-
         $self->{'dbh'}->do(
             "DROP DATABASE IF EXISTS `@{ [ $::imscpConfig{'DATABASE_NAME'} . '_roundcube' ] }`"
         );
@@ -323,11 +321,10 @@ sub deleteMail
 {
     my ( $self, $moduleData ) = @_;
 
-    return unless $moduleData->{'MAIL_TYPE'} =~ /_mail/;
+    return 0 unless $moduleData->{'MAIL_TYPE'} =~ /_mail/;
 
     local $@;
     eval {
-        local $self->{'dbh'}->{'RaiseError'} = TRUE;
         $self->{'dbh'}->do(
             "
                 DELETE FROM `@{ [ $::imscpConfig{'DATABASE_NAME'} . '_roundcube' ] }`.`users`
@@ -364,9 +361,9 @@ sub afterFrontEndBuildConfFile
 {
     my ( $tplContent, $tplName ) = @_;
 
-    return 0 unless grep (
-        $_ eq $tplName, '00_master.nginx', '00_master_ssl.nginx'
-    );
+    return 0 unless grep ( $_ eq $tplName, qw/
+        00_master.nginx 00_master_ssl.nginx
+    /);
 
     ${ $tplContent } = replaceBloc(
         "# SECTION custom BEGIN.\n",
@@ -422,8 +419,6 @@ sub _buildConfigFiles
 
     local $@;
     my $rs = eval {
-        local $self->{'dbh'}->{'RaiseError'} = TRUE;
-
         my %config = @{ $self->{'dbh'}->selectcol_arrayref(
             "
                 SELECT `name`, `value`
@@ -608,8 +603,6 @@ sub _setupSqlUser
             $self->{'_roundcube_control_user_passwd'}
         );
 
-        local $self->{'dbh'}->{'RaiseError'} = TRUE;
-
         # Grant 'all' privileges on the imscp_roundcube database
         $self->{'dbh'}->do(
             "
@@ -657,8 +650,6 @@ sub _setupDatabase
 
     local $@;
     my $rs = eval {
-        local $self->{'dbh'}->{'RaiseError'} = TRUE;
-
         my $database = ::setupGetQuestion( 'DATABASE_NAME' ) . '_roundcube';
 
         if ( !$self->{'dbh'}->selectrow_hashref(
