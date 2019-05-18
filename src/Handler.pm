@@ -39,6 +39,7 @@ use iMSCP::File;
 use iMSCP::Rights 'setRights';
 use iMSCP::Stepper qw/ startDetail endDetail step /;
 use iMSCP::TemplateParser qw/ getBloc replaceBloc process /;
+use JSON;
 use Servers::sqld;
 use Scalar::Defer;
 use parent 'Common::Object';
@@ -98,7 +99,25 @@ EOT
 
         startDetail();
         $composer->setStdRoutines( $stdRoutine, $stdRoutine );
-        $composer->dumpComposerJson();
+
+        @{ ( $composer->getComposerJson( TRUE ) ) }{qw/
+            config minimum-stability prefer-stable
+        /} = (
+            {
+                'sort-packages'          => JSON::true,
+                'discard-changes'        => JSON::true,
+                'htaccess-protect'       => JSON::false,
+                'optimize-autoloader'    => JSON::true,
+                'apcu-autoloader'        => JSON::true,
+                'classmap-authoritative' => JSON::false,
+                'preferred-install'      => 'dist',
+                'process-timeout'        => 5000,
+                'use-include-path'       => JSON::false
+            },
+            'dev',
+            JSON::true
+        );
+
         # Install Roundcube PHP dependencies
         $composer->update( TRUE );
 
@@ -422,7 +441,8 @@ sub _buildConfigFiles
         my %config = @{ $self->{'dbh'}->selectcol_arrayref(
             "
                 SELECT `name`, `value`
-                FROM `config` WHERE `name`
+                FROM `config`
+                WHERE `name`
                 LIKE 'ROUNDCUBE_%'
             ",
             { Columns => [ 1, 2 ] }
@@ -603,7 +623,7 @@ sub _setupSqlUser
             $self->{'_roundcube_control_user_passwd'}
         );
 
-        # Grant 'all' privileges on the imscp_roundcube database
+        # Grant 'all' privileges on the iMSCP Roundcube database
         $self->{'dbh'}->do(
             "
                 GRANT ALL PRIVILEGES ON `@{ [ $database =~ s/([%_])/\\$1/gr ] }`.*
@@ -614,7 +634,10 @@ sub _setupSqlUser
             $databaseUserHost
         );
 
-        # Grant 'select' privileges on the imscp.mail table
+        # Grant 'select' privileges on both mail_addr and mail_pass columns of
+        # the <imscp>.mail_users database table.
+        # Grant 'update' privileges on the mail_pass columns of the
+        # <imscp>.mail_users database table.
         # No need to escape wildcard characters.
         # See https://bugs.mysql.com/bug.php?id=18660
         $self->{'dbh'}->do(
@@ -742,7 +765,7 @@ sub _getSuCmd
     [
         '/bin/su',
         '-l', $::imscpConfig{'SYSTEM_USER_PREFIX'}
-        . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
+            . $::imscpConfig{'SYSTEM_USER_MIN_UID'},
         '-s', '/bin/sh',
         '-c', "@_"
     ];

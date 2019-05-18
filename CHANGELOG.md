@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.0.4 - TBD
+
+Initial release.
+
+### Added
+
+- Everything.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- composer.json (Roundcube)
+
 ## 1.0.3 - 20190512
 
 ### Added
