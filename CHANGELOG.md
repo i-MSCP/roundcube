@@ -1,8 +1,29 @@
 # Changelog
 
+## 1.0.5 - 20190518
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Make use of 'imscp/roundcube-plugin-installer' instead of 'roundcube/plugin-installer' (Roundcube plugin installation).
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 1.0.4 - 20190518
 
-Initial release.
 
 ### Added
 
