@@ -118,7 +118,12 @@ EOT
             JSON::true
         );
 
-        # Install Roundcube PHP dependencies
+        # We want make use of our own composer plugin for Roundcube plugins
+        # installation
+        $composer->remove( 'roundcube/plugin-installer' );
+        $composer->require( 'imscp/roundcube-plugin-installer', '^1.0' );
+
+        # Install Roundcube PHP dependencies 
         $composer->update( TRUE );
 
         # Install Roundcube Javascript dependencies
