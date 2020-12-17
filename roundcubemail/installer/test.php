@@ -126,7 +126,7 @@ if ($RCI->configured) {
         else {
             $RCI->fail('DSN (write)', $db_error_msg);
             echo '<p class="hint">Make sure that the configured database exists and that the user has write privileges<br />';
-            echo 'DSN: ' . $RCI->config['db_dsnw'] . '</p>';
+            echo 'DSN: ' . rcube::Q($RCI->config['db_dsnw']) . '</p>';
         }
     }
     else {
@@ -247,9 +247,15 @@ if ($user == '%u') {
     $user_field = new html_inputfield(array('name' => '_smtp_user', 'id' => 'smtp_user'));
     $user = $user_field->show($_POST['_smtp_user']);
 }
+else {
+    $user = html::quote($user);
+}
 if ($pass == '%p') {
     $pass_field = new html_passwordfield(array('name' => '_smtp_pass', 'id' => 'smtp_pass'));
     $pass = $pass_field->show();
+}
+else {
+    $pass = html::quote($pass);
 }
 
 ?>
@@ -261,11 +267,11 @@ if ($pass == '%p') {
 <tbody>
   <tr>
     <td><label for="smtp_server">Server</label></td>
-    <td><?php echo rcube_utils::parse_host($RCI->getprop('smtp_server', 'localhost')); ?></td>
+    <td><?php echo rcube::Q(rcube_utils::parse_host($RCI->getprop('smtp_server', 'localhost'))); ?></td>
   </tr>
   <tr>
     <td><label for="smtp_port">Port</label></td>
-    <td><?php echo $RCI->getprop('smtp_port'); ?></td>
+    <td><?php echo rcube::Q($RCI->getprop('smtp_port')); ?></td>
   </tr>
   <tr>
     <td><label for="smtp_user">Username</label></td>
@@ -288,8 +294,8 @@ if (isset($_POST['sendmail'])) {
 
   echo '<p>Trying to send email...<br />';
 
-  $from = idn_to_ascii(trim($_POST['_from']));
-  $to   = idn_to_ascii(trim($_POST['_to']));
+  $from = rcube_utils::idn_to_ascii(trim($_POST['_from']));
+  $to   = rcube_utils::idn_to_ascii(trim($_POST['_to']));
 
   if (preg_match('/^' . $RCI->email_pattern . '$/i', $from) &&
       preg_match('/^' . $RCI->email_pattern . '$/i', $to)
@@ -413,8 +419,8 @@ if (isset($_POST['imaptest']) && !empty($_POST['_host']) && !empty($_POST['_user
       $imap_port = 993;
   }
 
-  $imap_host = idn_to_ascii($imap_host);
-  $imap_user = idn_to_ascii($_POST['_user']);
+  $imap_host = rcube_utils::idn_to_ascii($imap_host);
+  $imap_user = rcube_utils::idn_to_ascii($_POST['_user']);
 
   $imap = new rcube_imap(null);
   $imap->set_options(array(
