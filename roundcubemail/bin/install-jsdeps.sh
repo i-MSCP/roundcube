@@ -125,7 +125,7 @@ function fetch_from_source($package, $useCache = true, &$filetype = null)
     echo "Fetching $package[url]\n";
 
     if ($CURL)
-        exec(sprintf('%s -s %s -o %s', $CURL, escapeshellarg($package['url']), $cache_file), $out, $retval);
+        exec(sprintf('%s -L -s %s -o %s', $CURL, escapeshellarg($package['url']), $cache_file), $out, $retval);
     else
         exec(sprintf('%s -q %s -O %s', $WGET, escapeshellarg($package['url']), $cache_file), $out, $retval);
 
